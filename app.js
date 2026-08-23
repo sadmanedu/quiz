@@ -332,7 +332,7 @@ const subjects = {
     className: "subject-gk",
     icon: "🌏",
     iconClass: "gk",
-    homeDescription: "বাংলাদেশ আর চারপাশ",
+    homeDescription: "বইভিত্তিক অনুশীলন",
     heading: "জানার দুনিয়া!",
     intro: "আমাদের বাংলাদেশ, প্রকৃতি আর ভালো অভ্যাস নিয়ে জানার আছে কত কিছু!",
     tip: "তাড়াহুড়ো নয়—তুমি যা দেখো, শোনো আর শেখো, সেটি মনে করে উত্তর দাও।",
@@ -448,11 +448,13 @@ const state = {
   topicId: null,
   englishTopicId: null,
   mathTopicId: null,
+  gkTopicId: null,
   quizOrigin: "standard",
   generatedQuiz: null,
   usedFullBookQuestionIds: [],
   usedEnglishFullBookQuestionIds: [],
   usedMathFullBookQuestionIds: [],
+  usedGkFullBookQuestionIds: [],
   questionIndex: 0,
   answers: [],
   awardedStars: 0
@@ -504,6 +506,10 @@ function getEnglishTopic() {
 
 function getMathTopic() {
   return state.mathTopicId ? MathBook.getTopic(state.mathTopicId) : null;
+}
+
+function getGkTopic() {
+  return state.gkTopicId ? GkBook.getTopic(state.gkTopicId) : null;
 }
 
 function isAnswered() {
@@ -610,13 +616,16 @@ function renderHome() {
 function renderSubjectCard(subject, index) {
   const englishQuestionCount = EnglishBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   const mathQuestionCount = MathBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+  const gkQuestionCount = GkBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   const itemCount = subject.id === "bangla"
     ? "বই + ৮টি বিষয়"
     : subject.id === "english"
       ? `${bnNumber(EnglishBook.topics.length)}টি বিষয় • ${bnNumber(englishQuestionCount)} প্রশ্ন`
       : subject.id === "math"
         ? `${bnNumber(MathBook.topics.length)}টি বিষয় • ${bnNumber(mathQuestionCount)} প্রশ্ন`
-        : "৩টি কুইজ";
+        : subject.id === "gk"
+          ? `${bnNumber(GkBook.topics.length)}টি বিষয় • ${bnNumber(gkQuestionCount)} প্রশ্ন`
+          : "৩টি কুইজ";
   return `
     <button class="subject-card ${subject.className}" type="button" data-action="open-subject" data-subject="${subject.id}" aria-label="${subject.name} বিষয়ের কুইজগুলো দেখো">
       <span class="subject-card-inner">
@@ -935,6 +944,93 @@ function renderMathTopicCard(topic) {
   `;
 }
 
+function renderGkOptions() {
+  const subject = subjects.gk;
+  const topicCount = GkBook.topics.length;
+  const totalQuestions = GkBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+
+  return `
+    <section class="bangla-book-page gk-book-page ${subject.className}" aria-labelledby="gk-book-title">
+      <button class="back-button" type="button" data-action="home"><span class="back-arrow" aria-hidden="true">←</span>সব বিষয়</button>
+      <div class="book-hub-hero">
+        <div>
+          <p class="subject-kicker">সাধারণ জ্ঞান <span aria-hidden="true">•</span> দ্বিতীয় শ্রেণি</p>
+          <h1 id="gk-book-title">জানার দুনিয়া!</h1>
+          <p>বাংলাদেশ, প্রকৃতি, স্বাস্থ্য, নিরাপত্তা ও চারপাশের জরুরি বিষয়গুলো থেকে অনুশীলন করো।</p>
+          <div class="subject-meta-row">
+            <span class="pill">✦ ${bnNumber(topicCount)}টি বিষয়</span>
+            <span class="pill">◷ ${bnNumber(totalQuestions)}টি দরকারি প্রশ্ন</span>
+            <span class="pill">💡 ব্যাখ্যাসহ</span>
+          </div>
+        </div>
+        <div class="book-hub-art gk-book-art" aria-hidden="true"><span>🌏</span><i>✦</i><b>জানি</b></div>
+      </div>
+
+      <div class="book-choice-heading">
+        <div><h2>কীভাবে অনুশীলন করবে?</h2><p>সব বিষয় থেকে random quiz অথবা পছন্দের একটি বিষয় বেছে নাও।</p></div>
+        <span class="quiz-count-note">${bnNumber(totalQuestions)}টি বাছাই করা প্রশ্ন</span>
+      </div>
+      <div class="book-choice-grid">
+        <button class="book-choice-card full-book-choice" type="button" data-action="start-gk-full-book" aria-label="সব সাধারণ জ্ঞান বিষয় থেকে ১০টি র‌্যান্ডম প্রশ্ন শুরু করো">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🌟</span><span class="choice-label">সম্পূর্ণ বই</span></span>
+          <span class="choice-title">Random Quiz</span>
+          <span class="choice-description">সব সাধারণ জ্ঞান বিষয় থেকে এলোমেলো ১০টি প্রশ্ন। Play Again চাপলে নতুন প্রশ্ন পাবে।</span>
+          <span class="choice-footer"><span>১০ প্রশ্নের র‌্যান্ডম কুইজ</span><strong>শুরু করি <i aria-hidden="true">→</i></strong></span>
+        </button>
+        <button class="book-choice-card chapter-book-choice" type="button" data-action="open-gk-topic-list" aria-label="সাধারণ জ্ঞানের বিষয়ভিত্তিক তালিকা দেখো">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🧩</span><span class="choice-label">বিষয়ভিত্তিক</span></span>
+          <span class="choice-title">বিষয় বেছে নাও</span>
+          <span class="choice-description">বাংলাদেশ, প্রকৃতি, স্বাস্থ্য, নিরাপত্তা, পরিবার, স্কুল ও বিজ্ঞান থেকে পছন্দের বিষয়টি বেছে নাও।</span>
+          <span class="choice-footer"><span>${bnNumber(topicCount)}টি বিষয়</span><strong>বিষয় দেখো <i aria-hidden="true">→</i></strong></span>
+        </button>
+      </div>
+
+      <aside class="book-note"><span aria-hidden="true">🌟</span><p><strong>জানার আনন্দ:</strong> চারপাশ সম্পর্কে জানলে প্রতিদিনের সিদ্ধান্ত নেওয়া আরও সহজ হয়।</p></aside>
+    </section>
+  `;
+}
+
+function renderGkTopicList() {
+  const subject = subjects.gk;
+  const totalQuestions = GkBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+  return `
+    <section class="chapter-list-page gk-topic-list ${subject.className}" aria-labelledby="gk-topic-list-title">
+      <button class="back-button" type="button" data-action="gk-options"><span class="back-arrow" aria-hidden="true">←</span>সাধারণ জ্ঞান</button>
+      <div class="chapter-list-hero">
+        <div>
+          <p class="subject-kicker">সাধারণ জ্ঞান <span aria-hidden="true">•</span> বিষয়ভিত্তিক অনুশীলন</p>
+          <h1 id="gk-topic-list-title">বিষয় বেছে নাও</h1>
+          <p>প্রতিটি বিষয়ে শুধু দরকারি সাধারণ জ্ঞানের প্রশ্ন আছে। ভুল হলে সঙ্গে সঙ্গে ব্যাখ্যাও দেখবে।</p>
+        </div>
+        <div class="chapter-stat-stack" aria-label="সাধারণ জ্ঞান কুইজের তথ্য">
+          <span><b>${bnNumber(GkBook.topics.length)}</b>টি বিষয়</span>
+          <span><b>${bnNumber(totalQuestions)}</b>টি প্রশ্ন</span>
+          <span><b>💡</b> ব্যাখ্যাসহ</span>
+        </div>
+      </div>
+
+      <section class="topic-section" aria-label="সাধারণ জ্ঞানের বিষয়সমূহ">
+        <div class="chapter-group-heading">
+          <span class="group-icon" aria-hidden="true">🌏</span>
+          <div><h2>আজ কী জানবে?</h2><p>একটি বিষয়ে চাপ দিলেই তার প্রয়োজনীয় প্রশ্ন শুরু হবে।</p></div>
+        </div>
+        <div class="chapter-card-grid">${GkBook.topics.map(renderGkTopicCard).join("")}</div>
+      </section>
+    </section>
+  `;
+}
+
+function renderGkTopicCard(topic) {
+  const completed = profile.completed.includes(`gk:gk-topic-${topic.id}`);
+  return `
+    <button class="chapter-card" type="button" data-action="start-gk-topic-quiz" data-gk-topic="${topic.id}" aria-label="${topic.title} বিষয়ে ${bnNumber(topic.questions.length)}টি প্রশ্ন শুরু করো">
+      <span class="chapter-card-icon gk-topic-icon" aria-hidden="true">${topic.icon}</span>
+      <span class="chapter-card-copy"><span class="chapter-number">সাধারণ জ্ঞান</span><strong>${topic.title}</strong><small>${bnNumber(topic.questions.length)}টি বাছাই করা প্রশ্ন <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
+      <span class="chapter-arrow" aria-hidden="true">→</span>
+    </button>
+  `;
+}
+
 function renderQuizCard(subject, quiz, index) {
   const completed = profile.completed.includes(`${subject.id}:${quiz.id}`);
   return `
@@ -1023,7 +1119,7 @@ function renderComplete() {
   const quiz = getQuiz();
   const score = quizScore();
   const allCorrect = score === quiz.questions.length;
-  const isFullBookQuiz = ["full-book", "english-full-book", "math-full-book"].includes(state.quizOrigin);
+  const isFullBookQuiz = ["full-book", "english-full-book", "math-full-book", "gk-full-book"].includes(state.quizOrigin);
   const title = allCorrect ? "অসাধারণ!" : score >= 2 ? "দারুণ চেষ্টা!" : "তুমি পারবে!";
   const description = isFullBookQuiz
     ? allCorrect
@@ -1080,6 +1176,12 @@ function render() {
   } else if (state.screen === "math-topic-list") {
     app.innerHTML = renderMathTopicList();
     document.title = "গণিতের বিষয়সমূহ | ঝিলমিল কুইজ";
+  } else if (state.screen === "gk-options") {
+    app.innerHTML = renderGkOptions();
+    document.title = "সাধারণ জ্ঞান | ঝিলমিল কুইজ";
+  } else if (state.screen === "gk-topic-list") {
+    app.innerHTML = renderGkTopicList();
+    document.title = "সাধারণ জ্ঞানের বিষয়সমূহ | ঝিলমিল কুইজ";
   } else if (state.screen === "topic-list") {
     app.innerHTML = renderTopicList();
     document.title = "বাংলা বিষয়ের তালিকা | ঝিলমিল কুইজ";
@@ -1116,6 +1218,10 @@ function openSubject(subjectKey) {
   }
   if (subjectKey === "math") {
     openMathOptions();
+    return;
+  }
+  if (subjectKey === "gk") {
+    openGkOptions();
     return;
   }
   state.screen = "subject";
@@ -1191,6 +1297,36 @@ function openMathTopicList() {
   state.englishTopicId = null;
   state.mathTopicId = null;
   state.quizOrigin = "math-topic";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openGkOptions() {
+  state.screen = "gk-options";
+  state.subjectKey = "gk";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.gkTopicId = null;
+  state.quizOrigin = "gk-options";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openGkTopicList() {
+  state.screen = "gk-topic-list";
+  state.subjectKey = "gk";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.gkTopicId = null;
+  state.quizOrigin = "gk-topic";
   state.generatedQuiz = null;
   state.answers = [];
   render();
@@ -1320,6 +1456,48 @@ function startMathFullBookQuiz() {
   moveToTop();
 }
 
+function startGkTopicQuiz(topicId) {
+  const quiz = GkBook.makeTopicQuiz(topicId);
+  if (!quiz) return;
+  state.screen = "quiz";
+  state.subjectKey = "gk";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.gkTopicId = topicId;
+  state.quizOrigin = "gk-topic";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
+function startGkFullBookQuiz() {
+  let quiz = GkBook.makeFullBookQuiz(state.usedGkFullBookQuestionIds);
+  if (quiz.availableQuestionCount < 10) {
+    state.usedGkFullBookQuestionIds = [];
+    quiz = GkBook.makeFullBookQuiz();
+  }
+  state.usedGkFullBookQuestionIds = [...state.usedGkFullBookQuestionIds, ...quiz.questionIds];
+  state.screen = "quiz";
+  state.subjectKey = "gk";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.gkTopicId = null;
+  state.quizOrigin = "gk-full-book";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
 function startFullBookQuiz() {
   let quiz = BanglaBook.makeFullBookQuiz(state.usedFullBookQuestionIds);
   // Once every available question has been used, begin a fresh random cycle.
@@ -1349,12 +1527,16 @@ function returnFromQuiz() {
     openEnglishTopicList();
   } else if (state.quizOrigin === "math-topic") {
     openMathTopicList();
+  } else if (state.quizOrigin === "gk-topic") {
+    openGkTopicList();
   } else if (state.quizOrigin === "full-book") {
     openBanglaOptions();
   } else if (state.quizOrigin === "english-full-book") {
     openEnglishOptions();
   } else if (state.quizOrigin === "math-full-book") {
     openMathOptions();
+  } else if (state.quizOrigin === "gk-full-book") {
+    openGkOptions();
   } else {
     openSubject(state.subjectKey);
   }
@@ -1400,11 +1582,15 @@ function handleAction(actionTarget) {
 
   if (action === "math-options") openMathOptions();
 
+  if (action === "gk-options") openGkOptions();
+
   if (action === "open-topic-list") openTopicList();
 
   if (action === "open-english-topic-list") openEnglishTopicList();
 
   if (action === "open-math-topic-list") openMathTopicList();
+
+  if (action === "open-gk-topic-list") openGkTopicList();
 
   if (action === "start-topic-quiz") startTopicQuiz(actionTarget.dataset.topic);
 
@@ -1412,11 +1598,15 @@ function handleAction(actionTarget) {
 
   if (action === "start-math-topic-quiz") startMathTopicQuiz(actionTarget.dataset.mathTopic);
 
+  if (action === "start-gk-topic-quiz") startGkTopicQuiz(actionTarget.dataset.gkTopic);
+
   if (action === "start-full-book") startFullBookQuiz();
 
   if (action === "start-english-full-book") startEnglishFullBookQuiz();
 
   if (action === "start-math-full-book") startMathFullBookQuiz();
+
+  if (action === "start-gk-full-book") startGkFullBookQuiz();
 
   if (action === "return-subject" || action === "quit-quiz") returnFromQuiz();
 
@@ -1440,9 +1630,11 @@ function handleAction(actionTarget) {
     if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
     else if (state.quizOrigin === "english-topic") startEnglishTopicQuiz(state.englishTopicId);
     else if (state.quizOrigin === "math-topic") startMathTopicQuiz(state.mathTopicId);
+    else if (state.quizOrigin === "gk-topic") startGkTopicQuiz(state.gkTopicId);
     else if (state.quizOrigin === "full-book") startFullBookQuiz();
     else if (state.quizOrigin === "english-full-book") startEnglishFullBookQuiz();
     else if (state.quizOrigin === "math-full-book") startMathFullBookQuiz();
+    else if (state.quizOrigin === "gk-full-book") startGkFullBookQuiz();
     else startQuiz(state.subjectKey, state.quizId);
   }
 }

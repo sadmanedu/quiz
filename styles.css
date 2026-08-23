@@ -3377,3 +3377,29 @@ main {
     letter-spacing: -3px;
   }
 }
+
+/* General knowledge topic practice */
+.gk-book-page .book-hub-hero {
+  background: linear-gradient(115deg, #e4f7df, #f4fbe9);
+}
+
+.gk-book-page .book-hub-art {
+  background: var(--subject-main);
+}
+
+.gk-book-art > span {
+  font-family: Arial, sans-serif;
+  font-size: 56px;
+}
+
+.gk-topic-list .chapter-list-hero {
+  background: #e9f8e4;
+}
+
+.gk-topic-icon {
+  font-family: Arial, sans-serif !important;
+}
+
+@media (max-width: 760px) {
+  .gk-book-art > span { font-size: 39px; }
+}
