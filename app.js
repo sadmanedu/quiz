@@ -667,6 +667,15 @@ function renderSubjectCard(subject, index) {
   `;
 }
 
+function renderAllSubjectShortcut() {
+  return `
+    <section class="all-subject-shortcut" aria-label="সব বিষয়ের র‌্যান্ডম কুইজ">
+      <div><strong>সব বিষয় মিলিয়ে খেলো</strong><span>বাংলা, English, গণিত ও সাধারণ জ্ঞান থেকে ১০টি র‌্যান্ডম প্রশ্ন</span></div>
+      <button class="primary-button" type="button" data-action="start-all-subjects-quiz">র‌্যান্ডম ১০ প্রশ্ন <span aria-hidden="true">→</span></button>
+    </section>
+  `;
+}
+
 function renderSubject() {
   const subject = getSubject();
   const totalQuestions = subject.quizzes.reduce((total, quiz) => total + quiz.questions.length, 0);
@@ -775,6 +784,7 @@ function renderTopicList() {
           <span><b>💡</b> ব্যাখ্যাসহ</span>
         </div>
       </div>
+      ${renderAllSubjectShortcut()}
 
       <section class="topic-section" aria-label="বাংলা বিষয়ের তালিকা">
         <div class="chapter-group-heading">
@@ -862,6 +872,7 @@ function renderEnglishTopicList() {
           <span><b>💡</b> ব্যাখ্যাসহ</span>
         </div>
       </div>
+      ${renderAllSubjectShortcut()}
 
       <section class="topic-section" aria-label="English learning topics">
         <div class="chapter-group-heading">
@@ -933,28 +944,15 @@ function renderMathOptions() {
 
 function renderMathTopicList() {
   const subject = subjects.math;
-  const totalQuestions = MathBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   return `
     <section class="chapter-list-page math-topic-list ${subject.className}" aria-labelledby="math-topic-list-title">
-      <button class="back-button" type="button" data-action="math-options"><span class="back-arrow" aria-hidden="true">←</span>গণিত বই</button>
-      <div class="chapter-list-hero">
-        <div>
-          <p class="subject-kicker">প্রাথমিক গণিত <span aria-hidden="true">•</span> বিষয়ভিত্তিক অনুশীলন</p>
-          <h1 id="math-topic-list-title">বিষয় বেছে নাও</h1>
-          <p>প্রতিটি বিষয়ে বই থেকে বাছাই করা প্রয়োজনীয় প্রশ্ন আছে। ভুল হলে সঙ্গে সঙ্গে ব্যাখ্যাও দেখবে।</p>
-        </div>
-        <div class="chapter-stat-stack" aria-label="গণিত কুইজের তথ্য">
-          <span><b>${bnNumber(MathBook.topics.length)}</b>টি বিষয়</span>
-          <span><b>${bnNumber(totalQuestions)}</b>টি প্রশ্ন</span>
-          <span><b>💡</b> ব্যাখ্যাসহ</span>
-        </div>
+      <button class="back-button" type="button" data-action="home"><span class="back-arrow" aria-hidden="true">←</span>সব বিষয়</button>
+      <div class="simple-topic-heading">
+        <h1 id="math-topic-list-title">গণিতের বিষয়সমূহ</h1>
+        <p>পছন্দের একটি বিষয়ে চাপ দিয়ে অনুশীলন শুরু করো।</p>
       </div>
-
+      ${renderAllSubjectShortcut()}
       <section class="topic-section" aria-label="গণিতের বিষয়সমূহ">
-        <div class="chapter-group-heading">
-          <span class="group-icon" aria-hidden="true">+ −</span>
-          <div><h2>আজ কী শিখবে?</h2><p>একটি বিষয়ে চাপ দিলেই তার প্রয়োজনীয় প্রশ্ন শুরু হবে।</p></div>
-        </div>
         <div class="chapter-card-grid">${MathBook.topics.map(renderMathTopicCard).join("")}</div>
       </section>
     </section>
@@ -968,7 +966,7 @@ function renderMathTopicCard(topic) {
   return `
     <button class="chapter-card" type="button" data-action="start-math-topic-quiz" data-math-topic="${topic.id}" aria-label="${topic.title} বিষয়ে অনুশীলন শুরু করো">
       <span class="chapter-card-icon math-topic-icon" aria-hidden="true">${topic.icon}</span>
-      <span class="chapter-card-copy"><span class="chapter-number">প্রাথমিক গণিত</span><strong>${topic.title}</strong><small>${countLabel} <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
+      <span class="chapter-card-copy"><span class="chapter-number">গণিত অনুশীলন</span><strong>${topic.title}</strong><small>${countLabel} <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
       <span class="chapter-arrow" aria-hidden="true">→</span>
     </button>
   `;
@@ -1038,6 +1036,7 @@ function renderGkTopicList() {
           <span><b>💡</b> ব্যাখ্যাসহ</span>
         </div>
       </div>
+      ${renderAllSubjectShortcut()}
 
       <section class="topic-section" aria-label="সাধারণ জ্ঞানের বিষয়সমূহ">
         <div class="chapter-group-heading">
@@ -1276,7 +1275,7 @@ function openSubject(subjectKey) {
     return;
   }
   if (subjectKey === "math") {
-    openMathOptions();
+    openMathTopicList();
     return;
   }
   if (subjectKey === "gk") {
@@ -1339,18 +1338,7 @@ function openEnglishTopicList() {
 }
 
 function openMathOptions() {
-  state.screen = "math-options";
-  state.subjectKey = "math";
-  state.quizId = null;
-  state.topicId = null;
-  state.englishTopicId = null;
-  state.mathTopicId = null;
-  state.quizOrigin = "math-options";
-  state.generatedQuiz = null;
-  state.answers = [];
-  state.inputs = [];
-  render();
-  moveToTop();
+  openMathTopicList();
 }
 
 function openMathTopicList() {

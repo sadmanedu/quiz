@@ -3534,3 +3534,86 @@ main {
     font-size: 20px;
   }
 }
+
+/* Lightweight subject navigation and cross-subject shuffle */
+.simple-topic-heading {
+  margin: 5px 0 18px;
+}
+
+.simple-topic-heading h1 {
+  margin: 0;
+  color: #34435d;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: clamp(32px, 4vw, 43px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.simple-topic-heading p {
+  margin: 7px 0 0;
+  color: #748096;
+  font-size: 15px;
+}
+
+.all-subject-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 17px 0 25px;
+  padding: 15px 18px;
+  border: 1px solid #d9e6ef;
+  border-radius: 20px;
+  background: #eef7ff;
+}
+
+.all-subject-shortcut > div > strong,
+.all-subject-shortcut > div > span {
+  display: block;
+}
+
+.all-subject-shortcut > div > strong {
+  color: #3d566f;
+  font-size: 16px;
+}
+
+.all-subject-shortcut > div > span {
+  margin-top: 2px;
+  color: #71869b;
+  font-size: 13px;
+  line-height: 1.38;
+}
+
+.all-subject-shortcut .primary-button {
+  min-height: 42px;
+  flex: 0 0 auto;
+  padding: 9px 13px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .simple-topic-heading {
+    margin-bottom: 14px;
+  }
+
+  .simple-topic-heading h1 {
+    font-size: 31px;
+  }
+
+  .simple-topic-heading p {
+    font-size: 14px;
+  }
+
+  .all-subject-shortcut {
+    display: block;
+    margin: 13px 0 20px;
+    padding: 14px;
+    border-radius: 17px;
+  }
+
+  .all-subject-shortcut .primary-button {
+    width: 100%;
+    margin-top: 11px;
+  }
+}
