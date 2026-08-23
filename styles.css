@@ -3772,29 +3772,30 @@ body.quiz-mode .question-card > .quiz-kicker {
 
 body.quiz-mode .question-card h1 {
   max-width: 760px;
-  margin: 3px 0 14px;
-  font-size: clamp(24px, 3vw, 31px);
-  line-height: 1.17;
+  margin: 4px 0 16px;
+  font-size: clamp(26px, 3.2vw, 33px);
+  line-height: 1.18;
 }
 
 body.quiz-mode .answer-grid {
-  gap: 9px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 }
 
 body.quiz-mode .answer-option {
-  min-height: 52px;
-  gap: 9px;
-  padding: 7px 11px 7px 8px;
-  border-radius: 15px;
-  font-size: 16px;
+  min-height: 56px;
+  gap: 11px;
+  padding: 8px 13px 8px 9px;
+  border-radius: 16px;
+  font-size: 18px;
   line-height: 1.2;
 }
 
 body.quiz-mode .answer-letter {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  font-size: 14px;
+  width: 35px;
+  height: 35px;
+  border-radius: 11px;
+  font-size: 15px;
 }
 
 body.quiz-mode .feedback-row,
@@ -3932,42 +3933,42 @@ body.quiz-mode .number-submit-button {
   }
 
   body.quiz-mode .question-card {
-    padding: 12px 11px 14px;
+    padding: 14px 13px 15px;
     border-radius: 18px;
     scroll-padding: 8px;
   }
 
   body.quiz-mode .question-card > .quiz-kicker {
     margin-bottom: 1px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   body.quiz-mode .question-card h1 {
-    margin: 2px 0 10px;
-    font-size: clamp(21px, 6.5vw, 25px);
-    line-height: 1.16;
+    margin: 3px 0 11px;
+    font-size: clamp(23px, 6.8vw, 27px);
+    line-height: 1.17;
   }
 
   body.quiz-mode .answer-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 7px;
   }
 
   body.quiz-mode .answer-option {
-    min-height: 48px;
-    gap: 6px;
-    padding: 6px;
+    min-height: 51px;
+    gap: 8px;
+    padding: 7px 9px 7px 7px;
     border-width: 1.5px;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.17;
+    border-radius: 13px;
+    font-size: 16px;
+    line-height: 1.18;
   }
 
   body.quiz-mode .answer-letter {
-    width: 27px;
-    height: 27px;
-    border-radius: 8px;
-    font-size: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 13px;
   }
 
   body.quiz-mode .feedback-row,
@@ -4036,6 +4037,6 @@ body.quiz-mode .number-submit-button {
   }
 
   body.quiz-mode .answer-option {
-    font-size: 13px;
+    font-size: 15px;
   }
 }
