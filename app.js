@@ -114,7 +114,7 @@ const subjects = {
     className: "subject-english",
     icon: "A B",
     iconClass: "english",
-    homeDescription: "২০০টি দরকারি প্রশ্ন",
+    homeDescription: "বইভিত্তিক অনুশীলন",
     heading: "English is fun!",
     intro: "খেলতে খেলতে শিখে নাও English letters আর everyday words। তুমি খুব ভালো পারবে!",
     tip: "শব্দটি জোরে জোরে একবার পড়ো। শুনলে ও মনে রাখলে উত্তর দেওয়া আরও সহজ হবে।",
@@ -602,10 +602,11 @@ function renderHome() {
 }
 
 function renderSubjectCard(subject, index) {
+  const englishQuestionCount = EnglishBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   const itemCount = subject.id === "bangla"
     ? "বই + ৮টি বিষয়"
     : subject.id === "english"
-      ? "১০টি বিষয় • ২০০ প্রশ্ন"
+      ? `${bnNumber(EnglishBook.topics.length)}টি বিষয় • ${bnNumber(englishQuestionCount)} প্রশ্ন`
       : "৩টি কুইজ";
   return `
     <button class="subject-card ${subject.className}" type="button" data-action="open-subject" data-subject="${subject.id}" aria-label="${subject.name} বিষয়ের কুইজগুলো দেখো">
