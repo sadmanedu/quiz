@@ -57,6 +57,11 @@ window.MathBook = (() => {
     return q(`${number(a)} − ${number(b)} = কত?`, number(answer), [number(answer - 1), number(answer + 1), number(answer + 2)], `${number(a)} থেকে ${number(b)} বাদ দিলে ${number(answer)} থাকে।`, `${a}−${b}`);
   }
 
+  function multiplicationQuestion(a, b) {
+    const answer = a * b;
+    return q(`${number(a)} × ${number(b)} = কত?`, number(answer), [number(answer - 1), number(answer + 1), number(answer + b + 1)], `${number(a)} এর ${number(b)} গুণ হলো ${number(answer)}।`, `${a}×${b}`);
+  }
+
   const topics = [
     {
       id: "number-reading",
@@ -64,6 +69,24 @@ window.MathBook = (() => {
       description: "১–১০০ এর বানান পড়ে অঙ্কে লিখি",
       icon: "১ ২",
       questions: numberSpellings.map(numberReadingQuestion)
+    },
+    {
+      id: "multiplication-tables",
+      title: "১–১০ ঘরের নামতা",
+      description: "১ থেকে ১০ ঘরের নামতা অনুশীলন করি",
+      icon: "×",
+      questions: [
+        multiplicationQuestion(1, 1), multiplicationQuestion(1, 3), multiplicationQuestion(1, 5), multiplicationQuestion(1, 7), multiplicationQuestion(1, 10),
+        multiplicationQuestion(2, 2), multiplicationQuestion(2, 4), multiplicationQuestion(2, 6), multiplicationQuestion(2, 8), multiplicationQuestion(2, 10),
+        multiplicationQuestion(3, 2), multiplicationQuestion(3, 4), multiplicationQuestion(3, 6), multiplicationQuestion(3, 8), multiplicationQuestion(3, 10),
+        multiplicationQuestion(4, 2), multiplicationQuestion(4, 3), multiplicationQuestion(4, 5), multiplicationQuestion(4, 7), multiplicationQuestion(4, 10),
+        multiplicationQuestion(5, 2), multiplicationQuestion(5, 3), multiplicationQuestion(5, 5), multiplicationQuestion(5, 7), multiplicationQuestion(5, 10),
+        multiplicationQuestion(6, 2), multiplicationQuestion(6, 3), multiplicationQuestion(6, 4), multiplicationQuestion(6, 6), multiplicationQuestion(6, 10),
+        multiplicationQuestion(7, 2), multiplicationQuestion(7, 3), multiplicationQuestion(7, 4), multiplicationQuestion(7, 5), multiplicationQuestion(7, 10),
+        multiplicationQuestion(8, 2), multiplicationQuestion(8, 3), multiplicationQuestion(8, 4), multiplicationQuestion(8, 5), multiplicationQuestion(8, 10),
+        multiplicationQuestion(9, 2), multiplicationQuestion(9, 3), multiplicationQuestion(9, 4), multiplicationQuestion(9, 5), multiplicationQuestion(9, 10),
+        multiplicationQuestion(10, 2), multiplicationQuestion(10, 3), multiplicationQuestion(10, 5), multiplicationQuestion(10, 7), multiplicationQuestion(10, 10)
+      ]
     },
     {
       id: "numbers-place-value",
