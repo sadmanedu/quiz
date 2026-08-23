@@ -5,7 +5,7 @@ const subjects = {
     className: "subject-bangla",
     icon: "অ",
     iconClass: "bangla",
-    homeDescription: "সম্পূর্ণ বই ও পাঠভিত্তিক",
+    homeDescription: "সম্পূর্ণ বই ও বিষয়ভিত্তিক",
     heading: "বাংলা নিয়ে খেলি!",
     intro: "অক্ষর আর শব্দের সঙ্গে বন্ধুত্ব করো। ছোট ছোট প্রশ্নে ঝালিয়ে নাও আজকের পড়া।",
     tip: "প্রশ্নটি ধীরে ধীরে পড়ো। দরকার হলে পাশে থাকা বড় কাউকে পড়ে বলতে বলো।",
@@ -445,7 +445,7 @@ const state = {
   screen: "home",
   subjectKey: null,
   quizId: null,
-  chapterId: null,
+  topicId: null,
   quizOrigin: "standard",
   generatedQuiz: null,
   usedFullBookQuestionIds: [],
@@ -490,8 +490,8 @@ function getQuiz() {
   return subject?.quizzes.find((quiz) => quiz.id === state.quizId);
 }
 
-function getBanglaChapter() {
-  return state.chapterId ? BanglaBook.getChapter(state.chapterId) : null;
+function getBanglaTopic() {
+  return state.topicId ? BanglaBook.getTopic(state.topicId) : null;
 }
 
 function isAnswered() {
@@ -596,7 +596,7 @@ function renderHome() {
 }
 
 function renderSubjectCard(subject, index) {
-  const itemCount = subject.id === "bangla" ? "বই + ৫৩ পাঠ" : "৩টি কুইজ";
+  const itemCount = subject.id === "bangla" ? "বই + ৮টি বিষয়" : "৩টি কুইজ";
   return `
     <button class="subject-card ${subject.className}" type="button" data-action="open-subject" data-subject="${subject.id}" aria-label="${subject.name} বিষয়ের কুইজগুলো দেখো">
       <span class="subject-card-inner">
@@ -656,20 +656,20 @@ function renderSubject() {
 
 function renderBanglaOptions() {
   const subject = subjects.bangla;
-  const chapterCount = BanglaBook.chapters.length;
-  const questionCount = chapterCount * 20;
+  const topicCount = BanglaBook.topics.length;
+  const totalQuestions = BanglaBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
 
   return `
     <section class="bangla-book-page ${subject.className}" aria-labelledby="bangla-book-title">
       <button class="back-button" type="button" data-action="home"><span class="back-arrow" aria-hidden="true">←</span>সব বিষয়</button>
       <div class="book-hub-hero">
         <div>
-          <p class="subject-kicker">বাংলা <span aria-hidden="true">•</span> বইভিত্তিক অনুশীলন</p>
+          <p class="subject-kicker">বাংলা <span aria-hidden="true">•</span> শেখার অনুশীলন</p>
           <h1 id="bangla-book-title">বাংলা বই নিয়ে খেলি!</h1>
-          <p>তোমার বইয়ের পাঠগুলো থেকে প্রশ্ন অনুশীলন করো। প্রতিটি উত্তরের পর সহজ বাংলায় ব্যাখ্যাও দেখবে।</p>
+          <p>দরকারি বিষয়গুলো থেকে ছোট ছোট প্রশ্ন অনুশীলন করো। প্রতিটি উত্তরের পর সহজ বাংলায় ব্যাখ্যাও দেখবে।</p>
           <div class="subject-meta-row">
-            <span class="pill">✦ ${bnNumber(chapterCount)}টি পাঠ</span>
-            <span class="pill">◷ প্রতি পাঠে ২০টি প্রশ্ন</span>
+            <span class="pill">✦ ${bnNumber(topicCount)}টি বিষয়</span>
+            <span class="pill">◷ ${bnNumber(totalQuestions)}টি দরকারি প্রশ্ন</span>
             <span class="pill">💡 ব্যাখ্যাসহ</span>
           </div>
         </div>
@@ -678,20 +678,20 @@ function renderBanglaOptions() {
 
       <div class="book-choice-heading">
         <div><h2>কীভাবে অনুশীলন করবে?</h2><p>তোমার পছন্দের একটি পথ বেছে নাও।</p></div>
-        <span class="quiz-count-note">মোট ${bnNumber(questionCount)}+ প্রশ্ন</span>
+        <span class="quiz-count-note">শুধু শেখার দরকারি প্রশ্ন</span>
       </div>
       <div class="book-choice-grid">
-        <button class="book-choice-card full-book-choice" type="button" data-action="start-full-book" aria-label="সম্পূর্ণ বই থেকে ১০টি র‌্যান্ডম প্রশ্নের অনুশীলন শুরু করো">
+        <button class="book-choice-card full-book-choice" type="button" data-action="start-full-book" aria-label="সব বিষয় থেকে ১০টি র‌্যান্ডম প্রশ্নের অনুশীলন শুরু করো">
           <span class="choice-topline"><span class="choice-icon" aria-hidden="true">📚</span><span class="choice-label">প্রথম অপশন</span></span>
           <span class="choice-title">সম্পূর্ণ বই</span>
-          <span class="choice-description">সব পাঠ থেকে এলোমেলো ১০টি প্রশ্নে নিজের প্রস্তুতি যাচাই করো। প্রতিবার নতুন প্রশ্ন পাবে!</span>
+          <span class="choice-description">সব বিষয় থেকে এলোমেলো ১০টি প্রশ্নে নিজের প্রস্তুতি যাচাই করো। প্রতিবার নতুন প্রশ্ন পাবে!</span>
           <span class="choice-footer"><span>১০ প্রশ্নের র‌্যান্ডম কুইজ</span><strong>শুরু করি <i aria-hidden="true">→</i></strong></span>
         </button>
-        <button class="book-choice-card chapter-book-choice" type="button" data-action="open-chapter-list" aria-label="অধ্যায়ভিত্তিক প্রশ্নের তালিকা দেখো">
+        <button class="book-choice-card chapter-book-choice" type="button" data-action="open-topic-list" aria-label="বিষয়ভিত্তিক প্রশ্নের তালিকা দেখো">
           <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🧩</span><span class="choice-label">দ্বিতীয় অপশন</span></span>
-          <span class="choice-title">অধ্যায়ভিত্তিক</span>
-          <span class="choice-description">পাঠের নাম থেকে একটি বেছে নাও। প্রতিটি পাঠে আছে ২০টি প্রশ্ন ও ব্যাখ্যা।</span>
-          <span class="choice-footer"><span>${bnNumber(chapterCount)}টি পাঠ দেখো</span><strong>পাঠ বেছে নাও <i aria-hidden="true">→</i></strong></span>
+          <span class="choice-title">বিষয়ভিত্তিক</span>
+          <span class="choice-description">মাস, দিন, ঋতু ও আরও দরকারি বিষয় থেকে পছন্দের একটি বেছে নাও।</span>
+          <span class="choice-footer"><span>${bnNumber(topicCount)}টি বিষয় দেখো</span><strong>বিষয় বেছে নাও <i aria-hidden="true">→</i></strong></span>
         </button>
       </div>
 
@@ -700,89 +700,44 @@ function renderBanglaOptions() {
   `;
 }
 
-function renderChapterList() {
+function renderTopicList() {
   const subject = subjects.bangla;
+  const totalQuestions = BanglaBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   return `
-    <section class="chapter-list-page ${subject.className}" aria-labelledby="chapter-list-title">
+    <section class="chapter-list-page ${subject.className}" aria-labelledby="topic-list-title">
       <button class="back-button" type="button" data-action="bangla-options"><span class="back-arrow" aria-hidden="true">←</span>বাংলা বই</button>
       <div class="chapter-list-hero">
         <div>
-          <p class="subject-kicker">বাংলা বই <span aria-hidden="true">•</span> অধ্যায়ভিত্তিক অনুশীলন</p>
-          <h1 id="chapter-list-title">পাঠ বেছে নাও</h1>
-          <p>প্রতিটি পাঠে আছে ২০টি সহজ প্রশ্ন, সঠিক উত্তর এবং বুঝতে সুবিধার জন্য ছোট্ট ব্যাখ্যা।</p>
+          <p class="subject-kicker">বাংলা বই <span aria-hidden="true">•</span> বিষয়ভিত্তিক অনুশীলন</p>
+          <h1 id="topic-list-title">বিষয় বেছে নাও</h1>
+          <p>এখানে শুধু দরকারি শেখার বিষয় রাখা হয়েছে। প্রতিটি বিষয়ে আছে বাছাই করা প্রশ্ন ও সহজ ব্যাখ্যা।</p>
         </div>
-        <div class="chapter-stat-stack" aria-label="অধ্যায়ভিত্তিক কুইজের তথ্য">
-          <span><b>${bnNumber(BanglaBook.chapters.length)}</b>টি পাঠ</span>
-          <span><b>২০</b> প্রশ্ন করে</span>
+        <div class="chapter-stat-stack" aria-label="বিষয়ভিত্তিক কুইজের তথ্য">
+          <span><b>${bnNumber(BanglaBook.topics.length)}</b>টি বিষয়</span>
+          <span><b>${bnNumber(totalQuestions)}</b>টি প্রশ্ন</span>
           <span><b>💡</b> ব্যাখ্যাসহ</span>
         </div>
       </div>
 
-      <div class="chapter-groups">
-        ${BanglaBook.groups.map((group) => {
-          const groupChapters = BanglaBook.chapters.filter((chapter) => chapter.lesson >= group.from && chapter.lesson <= group.to);
-          return `
-            <section class="chapter-group" aria-labelledby="group-${group.from}">
-              <div class="chapter-group-heading">
-                <span class="group-icon" aria-hidden="true">${group.icon}</span>
-                <div><h2 id="group-${group.from}">${group.title}</h2><p>${group.description} <span aria-hidden="true">•</span> ${bnNumber(groupChapters.length)}টি পাঠ</p></div>
-              </div>
-              <div class="chapter-card-grid">${groupChapters.map(renderChapterCard).join("")}</div>
-            </section>
-          `;
-        }).join("")}
-      </div>
+      <section class="topic-section" aria-label="বাংলা বিষয়ের তালিকা">
+        <div class="chapter-group-heading">
+          <span class="group-icon" aria-hidden="true">✦</span>
+          <div><h2>আজ কী শিখবে?</h2><p>একটি বিষয়ে চাপ দিলেই কুইজ শুরু হবে।</p></div>
+        </div>
+        <div class="chapter-card-grid">${BanglaBook.topics.map(renderTopicCard).join("")}</div>
+      </section>
     </section>
   `;
 }
 
-function renderChapterCard(chapter) {
-  const completed = profile.completed.includes(`bangla:${chapter.id}`);
+function renderTopicCard(topic) {
+  const completed = profile.completed.includes(`bangla:bangla-topic-${topic.id}`);
   return `
-    <button class="chapter-card" type="button" data-action="open-chapter" data-chapter="${chapter.id}" aria-label="পাঠ ${bnNumber(chapter.lesson)}, ${chapter.title} - ২০টি প্রশ্ন দেখো">
-      <span class="chapter-card-icon" aria-hidden="true">${chapter.icon}</span>
-      <span class="chapter-card-copy"><span class="chapter-number">পাঠ ${bnNumber(chapter.lesson)}</span><strong>${chapter.title}</strong><small>২০টি প্রশ্ন <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
+    <button class="chapter-card" type="button" data-action="start-topic-quiz" data-topic="${topic.id}" aria-label="${topic.title} বিষয়ে ${bnNumber(topic.questions.length)}টি প্রশ্ন শুরু করো">
+      <span class="chapter-card-icon" aria-hidden="true">${topic.icon}</span>
+      <span class="chapter-card-copy"><span class="chapter-number">বিষয়ভিত্তিক অনুশীলন</span><strong>${topic.title}</strong><small>${bnNumber(topic.questions.length)}টি বাছাই করা প্রশ্ন <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
       <span class="chapter-arrow" aria-hidden="true">→</span>
     </button>
-  `;
-}
-
-function renderChapterDetail() {
-  const subject = subjects.bangla;
-  const chapter = getBanglaChapter();
-  const completed = profile.completed.includes(`bangla:${chapter.id}`);
-  return `
-    <section class="chapter-detail-page ${subject.className}" aria-labelledby="chapter-detail-title">
-      <button class="back-button" type="button" data-action="open-chapter-list"><span class="back-arrow" aria-hidden="true">←</span>সব পাঠ</button>
-      <div class="chapter-detail-hero">
-        <div class="chapter-detail-icon" aria-hidden="true">${chapter.icon}</div>
-        <div>
-          <p class="subject-kicker">পাঠ ${bnNumber(chapter.lesson)} <span aria-hidden="true">•</span> বাংলা বই</p>
-          <h1 id="chapter-detail-title">${chapter.title}</h1>
-          <p>এই পাঠের জন্য তৈরি ২০টি প্রশ্নে অনুশীলন করো। প্রতিটি প্রশ্নের উত্তর দেওয়ার সঙ্গে সঙ্গে বাংলায় ব্যাখ্যা দেখাবে।</p>
-          <div class="subject-meta-row"><span class="pill">◷ ২০টি প্রশ্ন</span><span class="pill">💡 উত্তর ও ব্যাখ্যা</span><span class="pill">★ ১ উত্তর = ১ তারা</span></div>
-        </div>
-      </div>
-
-      <div class="chapter-start-grid">
-        <article class="chapter-ready-card">
-          <span class="ready-sparkle" aria-hidden="true">✦</span>
-          <p class="chapter-card-kicker">তোমার অনুশীলন</p>
-          <h2>পাঠটি কি শুরু করবে?</h2>
-          <p>ধীরে ধীরে প্রশ্ন পড়ো। ভুল হলে ব্যাখ্যাটি দেখে আবার শিখে নাও।</p>
-          <button class="primary-button" type="button" data-action="start-chapter-quiz" data-chapter="${chapter.id}">${completed ? "আবার অনুশীলন করি" : "২০টি প্রশ্ন শুরু করি"} <span aria-hidden="true">→</span></button>
-        </article>
-        <article class="chapter-learn-card">
-          <h2>এই পাঠে অনুশীলন হবে</h2>
-          <ul>
-            <li><span aria-hidden="true">✓</span> পাঠের মূল বিষয় ও গুরুত্বপূর্ণ শব্দ বোঝা</li>
-            <li><span aria-hidden="true">✓</span> বর্ণ, শব্দ ও বাক্যের ব্যবহার শেখা</li>
-            <li><span aria-hidden="true">✓</span> প্রতিটি সঠিক উত্তরের কারণ জানা</li>
-          </ul>
-          <div class="explanation-chip"><span aria-hidden="true">💡</span> ব্যাখ্যা পড়লে উত্তরটি মনে রাখা সহজ হয়।</div>
-        </article>
-      </div>
-    </section>
   `;
 }
 
@@ -919,12 +874,9 @@ function render() {
   } else if (state.screen === "bangla-options") {
     app.innerHTML = renderBanglaOptions();
     document.title = "বাংলা বই | ঝিলমিল কুইজ";
-  } else if (state.screen === "chapter-list") {
-    app.innerHTML = renderChapterList();
-    document.title = "বাংলা বইয়ের পাঠসমূহ | ঝিলমিল কুইজ";
-  } else if (state.screen === "chapter-detail") {
-    app.innerHTML = renderChapterDetail();
-    document.title = `${getBanglaChapter().title} | ঝিলমিল কুইজ`;
+  } else if (state.screen === "topic-list") {
+    app.innerHTML = renderTopicList();
+    document.title = "বাংলা বিষয়ের তালিকা | ঝিলমিল কুইজ";
   } else if (state.screen === "quiz") {
     app.innerHTML = renderQuiz();
     document.title = `${getQuiz().title} | ঝিলমিল কুইজ`;
@@ -938,7 +890,7 @@ function goHome() {
   state.screen = "home";
   state.subjectKey = null;
   state.quizId = null;
-  state.chapterId = null;
+  state.topicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
@@ -954,7 +906,7 @@ function openSubject(subjectKey) {
   state.screen = "subject";
   state.subjectKey = subjectKey;
   state.quizId = null;
-  state.chapterId = null;
+  state.topicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
@@ -966,7 +918,7 @@ function openBanglaOptions() {
   state.screen = "bangla-options";
   state.subjectKey = "bangla";
   state.quizId = null;
-  state.chapterId = null;
+  state.topicId = null;
   state.quizOrigin = "bangla-options";
   state.generatedQuiz = null;
   state.answers = [];
@@ -974,24 +926,12 @@ function openBanglaOptions() {
   moveToTop();
 }
 
-function openChapterList() {
-  state.screen = "chapter-list";
+function openTopicList() {
+  state.screen = "topic-list";
   state.subjectKey = "bangla";
   state.quizId = null;
-  state.chapterId = null;
-  state.quizOrigin = "chapter";
-  state.generatedQuiz = null;
-  state.answers = [];
-  render();
-  moveToTop();
-}
-
-function openChapter(chapterId) {
-  state.screen = "chapter-detail";
-  state.subjectKey = "bangla";
-  state.chapterId = chapterId;
-  state.quizId = null;
-  state.quizOrigin = "chapter";
+  state.topicId = null;
+  state.quizOrigin = "topic";
   state.generatedQuiz = null;
   state.answers = [];
   render();
@@ -1002,7 +942,7 @@ function startQuiz(subjectKey, quizId) {
   state.screen = "quiz";
   state.subjectKey = subjectKey;
   state.quizId = quizId;
-  state.chapterId = null;
+  state.topicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.questionIndex = 0;
@@ -1012,14 +952,14 @@ function startQuiz(subjectKey, quizId) {
   moveToTop();
 }
 
-function startChapterQuiz(chapterId) {
-  const quiz = BanglaBook.makeChapterQuiz(chapterId);
+function startTopicQuiz(topicId) {
+  const quiz = BanglaBook.makeTopicQuiz(topicId);
   if (!quiz) return;
   state.screen = "quiz";
   state.subjectKey = "bangla";
   state.quizId = quiz.id;
-  state.chapterId = chapterId;
-  state.quizOrigin = "chapter";
+  state.topicId = topicId;
+  state.quizOrigin = "topic";
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
@@ -1039,7 +979,7 @@ function startFullBookQuiz() {
   state.screen = "quiz";
   state.subjectKey = "bangla";
   state.quizId = quiz.id;
-  state.chapterId = null;
+  state.topicId = null;
   state.quizOrigin = "full-book";
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
@@ -1050,8 +990,8 @@ function startFullBookQuiz() {
 }
 
 function returnFromQuiz() {
-  if (state.quizOrigin === "chapter") {
-    openChapterList();
+  if (state.quizOrigin === "topic") {
+    openTopicList();
   } else if (state.quizOrigin === "full-book") {
     openBanglaOptions();
   } else {
@@ -1095,11 +1035,9 @@ function handleAction(actionTarget) {
 
   if (action === "bangla-options") openBanglaOptions();
 
-  if (action === "open-chapter-list") openChapterList();
+  if (action === "open-topic-list") openTopicList();
 
-  if (action === "open-chapter") openChapter(actionTarget.dataset.chapter);
-
-  if (action === "start-chapter-quiz") startChapterQuiz(actionTarget.dataset.chapter);
+  if (action === "start-topic-quiz") startTopicQuiz(actionTarget.dataset.topic);
 
   if (action === "start-full-book") startFullBookQuiz();
 
@@ -1122,7 +1060,7 @@ function handleAction(actionTarget) {
   }
 
   if (action === "replay") {
-    if (state.quizOrigin === "chapter") startChapterQuiz(state.chapterId);
+    if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
     else if (state.quizOrigin === "full-book") startFullBookQuiz();
     else startQuiz(state.subjectKey, state.quizId);
   }
