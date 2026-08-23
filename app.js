@@ -589,8 +589,7 @@ function iconMarkup(subject, className) {
 function updateHeader() {
   if (state.screen === "quiz") {
     topActions.innerHTML = `
-      <span class="header-greeting">তুমি দারুণ করছো! ✦</span>
-      <button class="exit-quiz" type="button" data-action="quit-quiz">কুইজ ছেড়ে দাও <span aria-hidden="true">×</span></button>
+      <button class="exit-quiz" type="button" data-action="quit-quiz" aria-label="কুইজ থেকে বের হও">বের হই <span aria-hidden="true">×</span></button>
     `;
     return;
   }
@@ -1112,25 +1111,14 @@ function renderQuiz() {
 
   return `
     <section class="quiz-view ${subject.className}" aria-labelledby="question-title">
-      <nav class="quiz-nav" aria-label="কুইজ নেভিগেশন">
-        <div class="quiz-nav-title">
-          ${iconMarkup(subject, "mini-subject-icon")}
-          <span>${quiz.title}</span>
-        </div>
-        <button class="quit-button" type="button" data-action="return-subject">কুইজ তালিকা <span aria-hidden="true">×</span></button>
-      </nav>
-
-      <div class="quiz-progress-label">
-        <span>প্রশ্ন <strong>${bnNumber(state.questionIndex + 1)}/${bnNumber(quiz.questions.length)}</strong></span>
-        <span>${bnNumber(Math.round(progress))}% শেষ</span>
+      <div class="quiz-status">
+        <span class="quiz-status-title" title="${quiz.title}">${subject.name} <i aria-hidden="true">•</i> ${quiz.title}</span>
+        <span class="quiz-status-count">${bnNumber(state.questionIndex + 1)}/${bnNumber(quiz.questions.length)} <small>প্রশ্ন</small></span>
       </div>
-      <div class="quiz-progress-track" aria-label="কুইজের অগ্রগতি ${Math.round(progress)} শতাংশ"><span style="width: ${progress}%"></span></div>
+      <div class="quiz-progress-track" role="progressbar" aria-label="কুইজের অগ্রগতি" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><span style="width: ${progress}%"></span></div>
 
-      <article class="question-card ${subject.className}">
-        <div class="question-card-head">
-          <span class="question-symbol ${subject.iconClass}" aria-hidden="true">${question.visual || subject.icon}</span>
-          <div><p class="quiz-kicker">${questionHint}</p><span class="pill pill-light">১টি সঠিক উত্তর</span></div>
-        </div>
+      <article class="question-card ${subject.className}" data-quiz-scroll-region>
+        <p class="quiz-kicker">${questionHint}</p>
         <h1 id="question-title">${question.prompt}</h1>
         ${isBanglaNumberInput ? renderBanglaNumberInput(question, answered) : `
           <div class="answer-grid" role="group" aria-label="উত্তর বেছে নাও">
@@ -1147,26 +1135,22 @@ function renderQuiz() {
         `}
         ${answered ? renderFeedback(question, selected, state.questionIndex === quiz.questions.length - 1) : ""}
       </article>
-      <p class="quiz-helper">ভুল উত্তরও শেখার একটি সুন্দর সুযোগ। তুমি চেষ্টা করছো—এটাই সবচেয়ে গুরুত্বপূর্ণ!</p>
     </section>
   `;
 }
 
 function renderFeedback(question, selected, isLast) {
   const correct = selected === question.answer;
-  const title = correct ? "দারুণ! একদম ঠিক উত্তর।" : "চেষ্টা সুন্দর হয়েছে!";
+  const title = correct ? "সঠিক উত্তর!" : "ভালো চেষ্টা!";
   const correctAnswer = question.inputMode === "bangla-number" ? question.answer : question.options[question.answer];
-  const answerNote = correct
-    ? "দারুণ! এবার পরের প্রশ্নে যাও।"
-    : `সঠিক উত্তর: ${correctAnswer}`;
+  const answerNote = correct ? "" : `<small>সঠিক উত্তর: ${correctAnswer}</small>`;
   const explanation = question.explanation || "উত্তরটি আবার একবার দেখে মনে রাখো।";
   return `
-    <div class="feedback-row has-explanation" style="--feedback-bg: ${correct ? "#ecf9ed" : "#fff4e8"}; --feedback-title: ${correct ? "#397151" : "#a06a37"}">
+    <div class="feedback-row has-explanation" role="status" aria-live="polite" tabindex="-1" style="--feedback-bg: ${correct ? "#ecf9ed" : "#fff4e8"}; --feedback-title: ${correct ? "#397151" : "#a06a37"}">
       <div class="feedback-message">
-        <span class="feedback-emoji" aria-hidden="true">${correct ? "🎉" : "🌟"}</span>
-        <span><b>${title}</b><small>${answerNote}</small><small class="answer-explanation"><strong>ব্যাখ্যা:</strong> ${explanation}</small></span>
+        <span><b>${title}</b>${answerNote}<small class="answer-explanation"><strong>ব্যাখ্যা:</strong> ${explanation}</small></span>
       </div>
-      <button class="next-button" type="button" data-action="next-question">${isLast ? "ফলাফল দেখো" : "পরের প্রশ্ন"} <span aria-hidden="true">→</span></button>
+      <button class="next-button" type="button" data-action="next-question">${isLast ? "ফলাফল" : "পরের প্রশ্ন"} <span aria-hidden="true">→</span></button>
     </div>
   `;
 }
@@ -1211,6 +1195,7 @@ function renderComplete() {
 }
 
 function render() {
+  document.body.classList.toggle("quiz-mode", state.screen === "quiz");
   updateHeader();
   if (state.screen === "home") {
     app.innerHTML = renderHome();
@@ -1633,7 +1618,27 @@ function returnFromQuiz() {
 }
 
 function moveToTop() {
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  // Quiz transitions should be immediate so a queued smooth scroll never leaves
+  // the next question halfway down the viewport.
+  window.scrollTo({ top: 0, behavior: state.screen === "quiz" ? "auto" : "smooth" });
+}
+
+function revealQuizFeedback() {
+  requestAnimationFrame(() => {
+    const feedback = app.querySelector(".feedback-row");
+    const scrollRegion = app.querySelector("[data-quiz-scroll-region]");
+    if (!feedback || !scrollRegion) return;
+
+    const feedbackBox = feedback.getBoundingClientRect();
+    const regionBox = scrollRegion.getBoundingClientRect();
+    const feedbackIsClipped = feedbackBox.bottom > regionBox.bottom - 8 || feedbackBox.top < regionBox.top + 8;
+    if (feedbackIsClipped) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      feedback.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+    }
+
+    feedback.querySelector(".next-button")?.focus({ preventScroll: true });
+  });
 }
 
 function finishQuiz() {
@@ -1714,6 +1719,7 @@ function handleAction(actionTarget) {
     if (action === "submit-number-input" && currentValue) {
       state.answers[state.questionIndex] = currentValue;
       render();
+      revealQuizFeedback();
     }
   }
 
@@ -1722,6 +1728,7 @@ function handleAction(actionTarget) {
   if (action === "answer" && state.screen === "quiz" && !isAnswered()) {
     state.answers[state.questionIndex] = Number(actionTarget.dataset.answer);
     render();
+    revealQuizFeedback();
   }
 
   if (action === "next-question" && state.screen === "quiz" && isAnswered()) {
@@ -1774,6 +1781,7 @@ document.addEventListener("keydown", (event) => {
       event.preventDefault();
       state.answers[state.questionIndex] = currentValue;
       render();
+      revealQuizFeedback();
     }
     return;
   }
@@ -1782,6 +1790,7 @@ document.addEventListener("keydown", (event) => {
     event.preventDefault();
     state.answers[state.questionIndex] = answerIndex;
     render();
+    revealQuizFeedback();
   }
 });
 
