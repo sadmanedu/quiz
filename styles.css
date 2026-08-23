@@ -2360,3 +2360,960 @@ main {
     animation-iteration-count: 1 !important;
   }
 }
+/* Book-based Bangla learning paths */
+.bangla-book-page,
+.chapter-list-page,
+.chapter-detail-page {
+  --book-ink: #33425b;
+}
+
+.book-hub-hero,
+.chapter-list-hero,
+.chapter-detail-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(35, 47, 66, 0.07);
+  box-shadow: var(--soft-shadow);
+}
+
+.book-hub-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 215px;
+  gap: 24px;
+  min-height: 255px;
+  padding: 35px 40px;
+  border-radius: 32px;
+  background: linear-gradient(115deg, #ffe8df, #fff6e6);
+}
+
+.book-hub-hero::before {
+  position: absolute;
+  top: -115px;
+  right: 116px;
+  width: 240px;
+  height: 240px;
+  border: 31px solid rgba(255, 255, 255, 0.48);
+  border-radius: 50%;
+  content: "";
+}
+
+.book-hub-hero h1,
+.chapter-list-hero h1,
+.chapter-detail-hero h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #303f59;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: clamp(36px, 4.2vw, 51px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.book-hub-hero p:not(.subject-kicker),
+.chapter-list-hero p:not(.subject-kicker),
+.chapter-detail-hero p:not(.subject-kicker) {
+  position: relative;
+  z-index: 1;
+  max-width: 590px;
+  margin: 13px 0 0;
+  color: #647188;
+  font-size: 16px;
+  line-height: 1.58;
+}
+
+.book-hub-art {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-self: center;
+  justify-self: center;
+  width: 155px;
+  height: 155px;
+  place-items: center;
+  border: 6px solid rgba(255, 255, 255, 0.7);
+  border-radius: 43px 39px 46px 30px;
+  background: var(--subject-main);
+  box-shadow: 0 9px 0 var(--subject-shadow);
+  color: #fff;
+  transform: rotate(-7deg);
+}
+
+.book-hub-art > span {
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 78px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.book-hub-art b {
+  position: absolute;
+  right: -21px;
+  bottom: 13px;
+  padding: 4px 10px;
+  border: 2px solid rgba(74, 75, 97, 0.08);
+  border-radius: 10px;
+  color: #e36052;
+  background: #fffdf8;
+  box-shadow: 0 3px 0 rgba(78, 80, 92, 0.08);
+  font-size: 13px;
+  transform: rotate(8deg);
+}
+
+.book-hub-art i {
+  position: absolute;
+  top: -15px;
+  right: -22px;
+  color: #f6a735;
+  font-family: Arial, sans-serif;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 900;
+  transform: rotate(7deg);
+}
+
+.book-choice-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 43px 0 18px;
+}
+
+.book-choice-heading h2,
+.chapter-group-heading h2,
+.chapter-ready-card h2,
+.chapter-learn-card h2 {
+  margin: 0;
+  color: #34435d;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: -0.45px;
+  line-height: 1;
+}
+
+.book-choice-heading p {
+  margin: 5px 0 0;
+  color: #778296;
+  font-size: 15px;
+}
+
+.book-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.book-choice-card {
+  position: relative;
+  display: flex;
+  min-height: 266px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 25px;
+  overflow: hidden;
+  border: 1.5px solid rgba(43, 57, 82, 0.08);
+  border-radius: 28px;
+  color: #34435c;
+  text-align: left;
+  transition: transform 190ms ease, box-shadow 190ms ease;
+}
+
+.book-choice-card::after {
+  position: absolute;
+  top: -71px;
+  right: -52px;
+  width: 183px;
+  height: 183px;
+  border-radius: 50%;
+  content: "";
+}
+
+.book-choice-card:hover {
+  box-shadow: 0 10px 0 rgba(43, 57, 82, 0.045), 0 21px 31px rgba(43, 57, 82, 0.11);
+  transform: translateY(-5px);
+}
+
+.book-choice-card:active {
+  transform: translateY(-1px);
+}
+
+.full-book-choice {
+  background: #fff0e9;
+}
+
+.full-book-choice::after {
+  background: #ffdbcb;
+}
+
+.chapter-book-choice {
+  background: #fff8df;
+}
+
+.chapter-book-choice::after {
+  background: #ffe6a0;
+}
+
+.choice-topline,
+.choice-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.choice-icon {
+  display: grid;
+  width: 57px;
+  height: 57px;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 19px;
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(53, 67, 89, 0.08);
+  font-size: 29px;
+}
+
+.choice-label {
+  padding: 5px 10px;
+  border-radius: 100px;
+  color: #9a7865;
+  background: rgba(255, 255, 255, 0.63);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chapter-book-choice .choice-label {
+  color: #987535;
+}
+
+.choice-title {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 19px;
+  color: #34435c;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.choice-description {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 365px;
+  margin-top: 9px;
+  color: #6f7888;
+  font-size: 15px;
+  line-height: 1.48;
+}
+
+.choice-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  color: #7c7280;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.choice-footer strong {
+  color: #db6959;
+  font-size: 14px;
+}
+
+.chapter-book-choice .choice-footer strong {
+  color: #bf8418;
+}
+
+.choice-footer i {
+  display: inline-grid;
+  width: 23px;
+  height: 23px;
+  margin-left: 5px;
+  place-items: center;
+  border-radius: 8px;
+  color: #fff;
+  background: #ef7969;
+  font-family: Arial, sans-serif;
+  font-style: normal;
+}
+
+.chapter-book-choice .choice-footer i {
+  background: #e7b746;
+}
+
+.book-note {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-top: 21px;
+  padding: 14px 18px;
+  border: 1px dashed #ead8b2;
+  border-radius: 19px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.book-note > span {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border-radius: 12px;
+  background: #fff2bc;
+  font-size: 19px;
+}
+
+.book-note p {
+  margin: 0;
+  color: #777d89;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.book-note strong {
+  color: #5e6679;
+}
+
+/* Chapter list */
+.chapter-list-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 229px;
+  padding: 33px 40px;
+  border-radius: 31px;
+  background: #eef5ff;
+}
+
+.chapter-list-hero::after {
+  position: absolute;
+  right: -74px;
+  bottom: -104px;
+  width: 260px;
+  height: 260px;
+  border: 28px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  content: "";
+}
+
+.chapter-stat-stack {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 156px;
+  gap: 8px;
+}
+
+.chapter-stat-stack span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid rgba(76, 118, 162, 0.12);
+  border-radius: 12px;
+  color: #667892;
+  background: rgba(255, 255, 255, 0.74);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chapter-stat-stack b {
+  color: #4b9dd0;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.chapter-groups {
+  margin-top: 39px;
+}
+
+.chapter-group + .chapter-group {
+  margin-top: 36px;
+}
+
+.chapter-group-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.group-icon {
+  display: grid;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  border-radius: 16px;
+  color: #fff;
+  background: var(--subject-main);
+  box-shadow: 0 4px 0 var(--subject-shadow);
+  font-family: "Baloo Da 2", sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.chapter-group-heading h2 {
+  font-size: 27px;
+}
+
+.chapter-group-heading p {
+  margin: 2px 0 0;
+  color: #80899a;
+  font-size: 13px;
+}
+
+.chapter-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.chapter-card {
+  display: grid;
+  min-height: 99px;
+  grid-template-columns: 45px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 13px 13px 12px;
+  border: 1.5px solid #e8e7e2;
+  border-radius: 18px;
+  color: #394a64;
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(39, 52, 72, 0.035);
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.chapter-card:hover {
+  border-color: rgba(237, 118, 103, 0.37);
+  box-shadow: 0 7px 0 rgba(39, 52, 72, 0.04), 0 13px 24px rgba(39, 52, 72, 0.08);
+  transform: translateY(-3px);
+}
+
+.chapter-card-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--subject-main);
+  background: var(--subject-soft);
+  font-family: "Baloo Da 2", Arial, sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.chapter-card-copy {
+  display: block;
+  min-width: 0;
+}
+
+.chapter-number,
+.chapter-card-copy small {
+  display: block;
+  color: #929aaa;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.chapter-card-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 2px 0 3px;
+  color: #45556e;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.18;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.chapter-card-copy small {
+  color: #8691a0;
+}
+
+.chapter-arrow {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--subject-main);
+  background: var(--subject-soft);
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+}
+
+/* Individual chapter */
+.chapter-detail-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 25px;
+  min-height: 238px;
+  padding: 34px 40px;
+  border-radius: 31px;
+  background: #ffefe8;
+}
+
+.chapter-detail-hero::before {
+  position: absolute;
+  top: -92px;
+  right: -23px;
+  width: 217px;
+  height: 217px;
+  border: 27px solid rgba(255, 255, 255, 0.43);
+  border-radius: 50%;
+  content: "";
+}
+
+.chapter-detail-icon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  place-items: center;
+  border: 5px solid rgba(255, 255, 255, 0.68);
+  border-radius: 34px 30px 37px 25px;
+  color: #fff;
+  background: var(--subject-main);
+  box-shadow: 0 8px 0 var(--subject-shadow);
+  font-family: "Baloo Da 2", Arial, sans-serif;
+  font-size: 49px;
+  font-weight: 800;
+  line-height: 1;
+  transform: rotate(-5deg);
+}
+
+.chapter-start-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 20px;
+  margin-top: 27px;
+}
+
+.chapter-ready-card,
+.chapter-learn-card {
+  position: relative;
+  min-height: 242px;
+  padding: 27px 29px;
+  overflow: hidden;
+  border: 1px solid #e8e7e1;
+  border-radius: 25px;
+}
+
+.chapter-ready-card {
+  background: #fff7de;
+}
+
+.chapter-ready-card::after {
+  position: absolute;
+  right: -56px;
+  bottom: -79px;
+  width: 184px;
+  height: 184px;
+  border-radius: 50%;
+  background: #ffe9a1;
+  content: "";
+}
+
+.ready-sparkle {
+  position: absolute;
+  z-index: 1;
+  top: 19px;
+  right: 25px;
+  color: #eab640;
+  font-family: Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.chapter-card-kicker {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 5px;
+  color: #a0792d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.chapter-ready-card h2,
+.chapter-learn-card h2 {
+  position: relative;
+  z-index: 1;
+  font-size: 27px;
+}
+
+.chapter-ready-card > p:not(.chapter-card-kicker) {
+  position: relative;
+  z-index: 1;
+  max-width: 390px;
+  margin: 8px 0 17px;
+  color: #7c765f;
+  font-size: 14px;
+  line-height: 1.48;
+}
+
+.chapter-ready-card .primary-button {
+  position: relative;
+  z-index: 1;
+  min-height: 45px;
+  font-size: 15px;
+}
+
+.chapter-learn-card {
+  background: #fff;
+}
+
+.chapter-learn-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 17px;
+  padding: 0;
+  list-style: none;
+}
+
+.chapter-learn-card li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #69788d;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.chapter-learn-card li span {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  color: #fff;
+  background: #70bf83;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.explanation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 11px;
+  color: #737b87;
+  background: #f8f7f3;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.answer-explanation {
+  max-width: 610px;
+  margin-top: 6px !important;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(90, 109, 91, 0.21);
+  color: #5e7268 !important;
+  line-height: 1.43 !important;
+}
+
+.answer-explanation strong {
+  color: var(--feedback-title, #397151);
+  font-weight: 800;
+}
+
+.feedback-row.has-explanation .feedback-message {
+  align-items: flex-start;
+}
+
+.feedback-row.has-explanation .feedback-emoji {
+  margin-top: 3px;
+}
+
+@media (max-width: 1040px) {
+  .chapter-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .book-hub-hero {
+    grid-template-columns: 1fr 92px;
+    min-height: 210px;
+    gap: 4px;
+    padding: 27px 22px;
+    border-radius: 27px;
+  }
+
+  .book-hub-hero h1,
+  .chapter-list-hero h1,
+  .chapter-detail-hero h1 {
+    font-size: 35px;
+  }
+
+  .book-hub-hero p:not(.subject-kicker),
+  .chapter-list-hero p:not(.subject-kicker),
+  .chapter-detail-hero p:not(.subject-kicker) {
+    margin-top: 9px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .book-hub-art {
+    width: 75px;
+    height: 75px;
+    border-width: 4px;
+    border-radius: 25px 22px 27px 19px;
+  }
+
+  .book-hub-art > span {
+    font-size: 43px;
+  }
+
+  .book-hub-art b {
+    right: -11px;
+    bottom: 2px;
+    padding: 2px 6px;
+    border-width: 1px;
+    font-size: 10px;
+  }
+
+  .book-hub-art i {
+    top: -14px;
+    right: -15px;
+    font-size: 20px;
+  }
+
+  .book-choice-heading {
+    display: block;
+    margin: 33px 0 15px;
+  }
+
+  .book-choice-heading h2 {
+    font-size: 28px;
+  }
+
+  .book-choice-heading p {
+    font-size: 14px;
+  }
+
+  .book-choice-heading .quiz-count-note {
+    display: inline-flex;
+    margin-top: 9px;
+  }
+
+  .book-choice-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .book-choice-card {
+    min-height: 221px;
+    padding: 19px;
+    border-radius: 22px;
+  }
+
+  .choice-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    font-size: 24px;
+  }
+
+  .choice-title {
+    margin-top: 13px;
+    font-size: 27px;
+  }
+
+  .choice-description {
+    font-size: 13px;
+  }
+
+  .choice-footer {
+    padding-top: 12px;
+    font-size: 12px;
+  }
+
+  .choice-footer strong {
+    font-size: 13px;
+  }
+
+  .book-note {
+    align-items: start;
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .book-note p {
+    font-size: 13px;
+  }
+
+  .chapter-list-hero {
+    grid-template-columns: 1fr;
+    min-height: 236px;
+    gap: 15px;
+    padding: 27px 22px 21px;
+    border-radius: 27px;
+  }
+
+  .chapter-stat-stack {
+    grid-template-columns: repeat(3, 1fr);
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .chapter-stat-stack span {
+    display: grid;
+    justify-content: center;
+    gap: 1px;
+    padding: 7px 4px;
+    text-align: center;
+    font-size: 10px;
+  }
+
+  .chapter-stat-stack b {
+    font-size: 18px;
+  }
+
+  .chapter-groups {
+    margin-top: 31px;
+  }
+
+  .chapter-group + .chapter-group {
+    margin-top: 28px;
+  }
+
+  .chapter-group-heading {
+    gap: 9px;
+    margin-bottom: 11px;
+  }
+
+  .group-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    font-size: 20px;
+  }
+
+  .chapter-group-heading h2 {
+    font-size: 24px;
+  }
+
+  .chapter-card-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .chapter-card {
+    min-height: 77px;
+    grid-template-columns: 39px minmax(0, 1fr) 21px;
+    gap: 9px;
+    padding: 10px;
+    border-radius: 15px;
+  }
+
+  .chapter-card-icon {
+    width: 39px;
+    height: 39px;
+    border-radius: 13px;
+    font-size: 20px;
+  }
+
+  .chapter-card-copy strong {
+    font-size: 14px;
+  }
+
+  .chapter-card-copy small,
+  .chapter-number {
+    font-size: 10px;
+  }
+
+  .chapter-detail-hero {
+    grid-template-columns: 70px minmax(0, 1fr);
+    align-items: start;
+    gap: 15px;
+    min-height: 215px;
+    padding: 25px 18px;
+    border-radius: 27px;
+  }
+
+  .chapter-detail-icon {
+    width: 67px;
+    height: 67px;
+    border-width: 4px;
+    border-radius: 23px 20px 24px 17px;
+    font-size: 32px;
+  }
+
+  .chapter-detail-hero .subject-meta-row {
+    gap: 5px;
+    margin-top: 11px;
+  }
+
+  .chapter-detail-hero .subject-meta-row .pill {
+    min-height: 25px;
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .chapter-start-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+    margin-top: 17px;
+  }
+
+  .chapter-ready-card,
+  .chapter-learn-card {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 21px;
+  }
+
+  .chapter-ready-card h2,
+  .chapter-learn-card h2 {
+    font-size: 24px;
+  }
+
+  .chapter-ready-card > p:not(.chapter-card-kicker),
+  .chapter-learn-card li {
+    font-size: 13px;
+  }
+
+  .chapter-ready-card .primary-button {
+    width: 100%;
+  }
+
+  .chapter-learn-card ul {
+    gap: 8px;
+    margin: 13px 0;
+  }
+
+  .explanation-chip {
+    font-size: 11px;
+  }
+
+  .feedback-row.has-explanation .feedback-message {
+    align-items: flex-start;
+  }
+
+  .answer-explanation {
+    margin-top: 5px !important;
+    padding-top: 5px;
+  }
+}
