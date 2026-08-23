@@ -223,7 +223,7 @@ const subjects = {
     className: "subject-math",
     icon: "+ −",
     iconClass: "math",
-    homeDescription: "সংখ্যা, যোগ আর আকার",
+    homeDescription: "বইভিত্তিক অনুশীলন",
     heading: "গণিতের মজা!",
     intro: "সংখ্যা তোমার বন্ধু। যোগ-বিয়োগ আর আকারের এই খেলাগুলো একবার চেষ্টা করে দেখো।",
     tip: "আঙুলে গুনতে পারো! উত্তর দেওয়ার আগে সংখ্যাগুলো আরেকবার ভালো করে দেখো।",
@@ -447,10 +447,12 @@ const state = {
   quizId: null,
   topicId: null,
   englishTopicId: null,
+  mathTopicId: null,
   quizOrigin: "standard",
   generatedQuiz: null,
   usedFullBookQuestionIds: [],
   usedEnglishFullBookQuestionIds: [],
+  usedMathFullBookQuestionIds: [],
   questionIndex: 0,
   answers: [],
   awardedStars: 0
@@ -498,6 +500,10 @@ function getBanglaTopic() {
 
 function getEnglishTopic() {
   return state.englishTopicId ? EnglishBook.getTopic(state.englishTopicId) : null;
+}
+
+function getMathTopic() {
+  return state.mathTopicId ? MathBook.getTopic(state.mathTopicId) : null;
 }
 
 function isAnswered() {
@@ -603,11 +609,14 @@ function renderHome() {
 
 function renderSubjectCard(subject, index) {
   const englishQuestionCount = EnglishBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+  const mathQuestionCount = MathBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
   const itemCount = subject.id === "bangla"
     ? "বই + ৮টি বিষয়"
     : subject.id === "english"
       ? `${bnNumber(EnglishBook.topics.length)}টি বিষয় • ${bnNumber(englishQuestionCount)} প্রশ্ন`
-      : "৩টি কুইজ";
+      : subject.id === "math"
+        ? `${bnNumber(MathBook.topics.length)}টি বিষয় • ${bnNumber(mathQuestionCount)} প্রশ্ন`
+        : "৩টি কুইজ";
   return `
     <button class="subject-card ${subject.className}" type="button" data-action="open-subject" data-subject="${subject.id}" aria-label="${subject.name} বিষয়ের কুইজগুলো দেখো">
       <span class="subject-card-inner">
@@ -839,6 +848,93 @@ function renderEnglishTopicCard(topic) {
   `;
 }
 
+function renderMathOptions() {
+  const subject = subjects.math;
+  const topicCount = MathBook.topics.length;
+  const totalQuestions = MathBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+
+  return `
+    <section class="bangla-book-page math-book-page ${subject.className}" aria-labelledby="math-book-title">
+      <button class="back-button" type="button" data-action="home"><span class="back-arrow" aria-hidden="true">←</span>সব বিষয়</button>
+      <div class="book-hub-hero">
+        <div>
+          <p class="subject-kicker">প্রাথমিক গণিত <span aria-hidden="true">•</span> দ্বিতীয় শ্রেণি</p>
+          <h1 id="math-book-title">গণিতের মজা!</h1>
+          <p>সংখ্যা, যোগ-বিয়োগ, ভগ্নাংশ, পরিমাপ ও মুদ্রা—বইয়ের দরকারি বিষয়গুলো থেকে অনুশীলন করো।</p>
+          <div class="subject-meta-row">
+            <span class="pill">✦ ${bnNumber(topicCount)}টি বিষয়</span>
+            <span class="pill">◷ ${bnNumber(totalQuestions)}টি দরকারি প্রশ্ন</span>
+            <span class="pill">💡 ব্যাখ্যাসহ</span>
+          </div>
+        </div>
+        <div class="book-hub-art math-book-art" aria-hidden="true"><span>+ −</span><i>✦</i><b>গণিত</b></div>
+      </div>
+
+      <div class="book-choice-heading">
+        <div><h2>কীভাবে অনুশীলন করবে?</h2><p>সব বিষয় থেকে random quiz অথবা একটি নির্দিষ্ট বিষয় বেছে নাও।</p></div>
+        <span class="quiz-count-note">${bnNumber(totalQuestions)}টি বাছাই করা প্রশ্ন</span>
+      </div>
+      <div class="book-choice-grid">
+        <button class="book-choice-card full-book-choice" type="button" data-action="start-math-full-book" aria-label="সব গণিত বিষয় থেকে ১০টি র‌্যান্ডম প্রশ্ন শুরু করো">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🔢</span><span class="choice-label">সম্পূর্ণ বই</span></span>
+          <span class="choice-title">Random Quiz</span>
+          <span class="choice-description">সব গণিত বিষয় থেকে এলোমেলো ১০টি প্রশ্ন। Play Again চাপলে নতুন প্রশ্ন পাবে।</span>
+          <span class="choice-footer"><span>১০ প্রশ্নের র‌্যান্ডম কুইজ</span><strong>শুরু করি <i aria-hidden="true">→</i></strong></span>
+        </button>
+        <button class="book-choice-card chapter-book-choice" type="button" data-action="open-math-topic-list" aria-label="গণিতের বিষয়ভিত্তিক তালিকা দেখো">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">📐</span><span class="choice-label">বিষয়ভিত্তিক</span></span>
+          <span class="choice-title">বিষয় বেছে নাও</span>
+          <span class="choice-description">সংখ্যা, যোগ, বিয়োগ, ভগ্নাংশ, আকৃতি, পরিমাপ, টাকা ও উপাত্ত থেকে পছন্দের বিষয়টি বেছে নাও।</span>
+          <span class="choice-footer"><span>${bnNumber(topicCount)}টি বিষয়</span><strong>বিষয় দেখো <i aria-hidden="true">→</i></strong></span>
+        </button>
+      </div>
+
+      <aside class="book-note"><span aria-hidden="true">🌟</span><p><strong>ছোট্ট টিপ:</strong> হিসাবটি ধীরে করো, দরকার হলে খাতায় লিখে আবার মিলিয়ে দেখো।</p></aside>
+    </section>
+  `;
+}
+
+function renderMathTopicList() {
+  const subject = subjects.math;
+  const totalQuestions = MathBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+  return `
+    <section class="chapter-list-page math-topic-list ${subject.className}" aria-labelledby="math-topic-list-title">
+      <button class="back-button" type="button" data-action="math-options"><span class="back-arrow" aria-hidden="true">←</span>গণিত বই</button>
+      <div class="chapter-list-hero">
+        <div>
+          <p class="subject-kicker">প্রাথমিক গণিত <span aria-hidden="true">•</span> বিষয়ভিত্তিক অনুশীলন</p>
+          <h1 id="math-topic-list-title">বিষয় বেছে নাও</h1>
+          <p>প্রতিটি বিষয়ে বই থেকে বাছাই করা প্রয়োজনীয় প্রশ্ন আছে। ভুল হলে সঙ্গে সঙ্গে ব্যাখ্যাও দেখবে।</p>
+        </div>
+        <div class="chapter-stat-stack" aria-label="গণিত কুইজের তথ্য">
+          <span><b>${bnNumber(MathBook.topics.length)}</b>টি বিষয়</span>
+          <span><b>${bnNumber(totalQuestions)}</b>টি প্রশ্ন</span>
+          <span><b>💡</b> ব্যাখ্যাসহ</span>
+        </div>
+      </div>
+
+      <section class="topic-section" aria-label="গণিতের বিষয়সমূহ">
+        <div class="chapter-group-heading">
+          <span class="group-icon" aria-hidden="true">+ −</span>
+          <div><h2>আজ কী শিখবে?</h2><p>একটি বিষয়ে চাপ দিলেই তার প্রয়োজনীয় প্রশ্ন শুরু হবে।</p></div>
+        </div>
+        <div class="chapter-card-grid">${MathBook.topics.map(renderMathTopicCard).join("")}</div>
+      </section>
+    </section>
+  `;
+}
+
+function renderMathTopicCard(topic) {
+  const completed = profile.completed.includes(`math:math-topic-${topic.id}`);
+  return `
+    <button class="chapter-card" type="button" data-action="start-math-topic-quiz" data-math-topic="${topic.id}" aria-label="${topic.title} বিষয়ে ${bnNumber(topic.questions.length)}টি প্রশ্ন শুরু করো">
+      <span class="chapter-card-icon math-topic-icon" aria-hidden="true">${topic.icon}</span>
+      <span class="chapter-card-copy"><span class="chapter-number">প্রাথমিক গণিত</span><strong>${topic.title}</strong><small>${bnNumber(topic.questions.length)}টি বাছাই করা প্রশ্ন <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
+      <span class="chapter-arrow" aria-hidden="true">→</span>
+    </button>
+  `;
+}
+
 function renderQuizCard(subject, quiz, index) {
   const completed = profile.completed.includes(`${subject.id}:${quiz.id}`);
   return `
@@ -927,7 +1023,7 @@ function renderComplete() {
   const quiz = getQuiz();
   const score = quizScore();
   const allCorrect = score === quiz.questions.length;
-  const isFullBookQuiz = state.quizOrigin === "full-book" || state.quizOrigin === "english-full-book";
+  const isFullBookQuiz = ["full-book", "english-full-book", "math-full-book"].includes(state.quizOrigin);
   const title = allCorrect ? "অসাধারণ!" : score >= 2 ? "দারুণ চেষ্টা!" : "তুমি পারবে!";
   const description = isFullBookQuiz
     ? allCorrect
@@ -978,6 +1074,12 @@ function render() {
   } else if (state.screen === "english-topic-list") {
     app.innerHTML = renderEnglishTopicList();
     document.title = "English topics | ঝিলমিল কুইজ";
+  } else if (state.screen === "math-options") {
+    app.innerHTML = renderMathOptions();
+    document.title = "প্রাথমিক গণিত | ঝিলমিল কুইজ";
+  } else if (state.screen === "math-topic-list") {
+    app.innerHTML = renderMathTopicList();
+    document.title = "গণিতের বিষয়সমূহ | ঝিলমিল কুইজ";
   } else if (state.screen === "topic-list") {
     app.innerHTML = renderTopicList();
     document.title = "বাংলা বিষয়ের তালিকা | ঝিলমিল কুইজ";
@@ -1010,6 +1112,10 @@ function openSubject(subjectKey) {
   }
   if (subjectKey === "english") {
     openEnglishOptions();
+    return;
+  }
+  if (subjectKey === "math") {
+    openMathOptions();
     return;
   }
   state.screen = "subject";
@@ -1057,6 +1163,34 @@ function openEnglishTopicList() {
   state.topicId = null;
   state.englishTopicId = null;
   state.quizOrigin = "english-topic";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openMathOptions() {
+  state.screen = "math-options";
+  state.subjectKey = "math";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.quizOrigin = "math-options";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openMathTopicList() {
+  state.screen = "math-topic-list";
+  state.subjectKey = "math";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.quizOrigin = "math-topic";
   state.generatedQuiz = null;
   state.answers = [];
   render();
@@ -1146,6 +1280,46 @@ function startEnglishFullBookQuiz() {
   moveToTop();
 }
 
+function startMathTopicQuiz(topicId) {
+  const quiz = MathBook.makeTopicQuiz(topicId);
+  if (!quiz) return;
+  state.screen = "quiz";
+  state.subjectKey = "math";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = topicId;
+  state.quizOrigin = "math-topic";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
+function startMathFullBookQuiz() {
+  let quiz = MathBook.makeFullBookQuiz(state.usedMathFullBookQuestionIds);
+  if (quiz.availableQuestionCount < 10) {
+    state.usedMathFullBookQuestionIds = [];
+    quiz = MathBook.makeFullBookQuiz();
+  }
+  state.usedMathFullBookQuestionIds = [...state.usedMathFullBookQuestionIds, ...quiz.questionIds];
+  state.screen = "quiz";
+  state.subjectKey = "math";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.quizOrigin = "math-full-book";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
 function startFullBookQuiz() {
   let quiz = BanglaBook.makeFullBookQuiz(state.usedFullBookQuestionIds);
   // Once every available question has been used, begin a fresh random cycle.
@@ -1173,10 +1347,14 @@ function returnFromQuiz() {
     openTopicList();
   } else if (state.quizOrigin === "english-topic") {
     openEnglishTopicList();
+  } else if (state.quizOrigin === "math-topic") {
+    openMathTopicList();
   } else if (state.quizOrigin === "full-book") {
     openBanglaOptions();
   } else if (state.quizOrigin === "english-full-book") {
     openEnglishOptions();
+  } else if (state.quizOrigin === "math-full-book") {
+    openMathOptions();
   } else {
     openSubject(state.subjectKey);
   }
@@ -1220,17 +1398,25 @@ function handleAction(actionTarget) {
 
   if (action === "english-options") openEnglishOptions();
 
+  if (action === "math-options") openMathOptions();
+
   if (action === "open-topic-list") openTopicList();
 
   if (action === "open-english-topic-list") openEnglishTopicList();
+
+  if (action === "open-math-topic-list") openMathTopicList();
 
   if (action === "start-topic-quiz") startTopicQuiz(actionTarget.dataset.topic);
 
   if (action === "start-english-topic-quiz") startEnglishTopicQuiz(actionTarget.dataset.englishTopic);
 
+  if (action === "start-math-topic-quiz") startMathTopicQuiz(actionTarget.dataset.mathTopic);
+
   if (action === "start-full-book") startFullBookQuiz();
 
   if (action === "start-english-full-book") startEnglishFullBookQuiz();
+
+  if (action === "start-math-full-book") startMathFullBookQuiz();
 
   if (action === "return-subject" || action === "quit-quiz") returnFromQuiz();
 
@@ -1253,8 +1439,10 @@ function handleAction(actionTarget) {
   if (action === "replay") {
     if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
     else if (state.quizOrigin === "english-topic") startEnglishTopicQuiz(state.englishTopicId);
+    else if (state.quizOrigin === "math-topic") startMathTopicQuiz(state.mathTopicId);
     else if (state.quizOrigin === "full-book") startFullBookQuiz();
     else if (state.quizOrigin === "english-full-book") startEnglishFullBookQuiz();
+    else if (state.quizOrigin === "math-full-book") startMathFullBookQuiz();
     else startQuiz(state.subjectKey, state.quizId);
   }
 }

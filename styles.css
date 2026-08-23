@@ -3347,3 +3347,33 @@ main {
     letter-spacing: -3px;
   }
 }
+
+/* Primary mathematics topic practice */
+.math-book-page .book-hub-hero {
+  background: linear-gradient(115deg, #e3f5ff, #eef9ff);
+}
+
+.math-book-page .book-hub-art {
+  background: var(--subject-main);
+}
+
+.math-book-art > span {
+  font-family: Arial, sans-serif;
+  font-size: 40px;
+  letter-spacing: -4px;
+}
+
+.math-topic-list .chapter-list-hero {
+  background: #e8f5ff;
+}
+
+.math-topic-icon {
+  font-family: Arial, sans-serif !important;
+}
+
+@media (max-width: 760px) {
+  .math-book-art > span {
+    font-size: 26px;
+    letter-spacing: -3px;
+  }
+}
