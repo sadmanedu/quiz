@@ -22,6 +22,31 @@ window.MathBook = (() => {
   const q = question;
   const number = (value) => bn(value);
 
+  const numberSpellings = [
+    ["১", "এক"], ["২", "দুই"], ["৩", "তিন"], ["৪", "চার"], ["৫", "পাঁচ"], ["৬", "ছয়"], ["৭", "সাত"], ["৮", "আট"], ["৯", "নয়"], ["১০", "দশ"],
+    ["১১", "এগারো"], ["১২", "বারো"], ["১৩", "তেরো"], ["১৪", "চৌদ্দ"], ["১৫", "পনেরো"], ["১৬", "ষোলো"], ["১৭", "সতেরো"], ["১৮", "আঠারো"], ["১৯", "ঊনিশ"], ["২০", "বিশ"],
+    ["২১", "একুশ"], ["২২", "বাইশ"], ["২৩", "তেইশ"], ["২৪", "চব্বিশ"], ["২৫", "পঁচিশ"], ["২৬", "ছাব্বিশ"], ["২৭", "সাতাশ"], ["২৮", "আটাশ"], ["২৯", "ঊনত্রিশ"], ["৩০", "ত্রিশ"],
+    ["৩১", "একত্রিশ"], ["৩২", "বত্রিশ"], ["৩৩", "তেত্রিশ"], ["৩৪", "চৌত্রিশ"], ["৩৫", "পঁয়ত্রিশ"], ["৩৬", "ছত্রিশ"], ["৩৭", "সাঁইত্রিশ"], ["৩৮", "আটত্রিশ"], ["৩৯", "ঊনচল্লিশ"], ["৪০", "চল্লিশ"],
+    ["৪১", "একচল্লিশ"], ["৪২", "বিয়াল্লিশ"], ["৪৩", "তেতাল্লিশ"], ["৪৪", "চুয়াল্লিশ"], ["৪৫", "পঁয়তাল্লিশ"], ["৪৬", "ছেচল্লিশ"], ["৪৭", "সাতচল্লিশ"], ["৪৮", "আটচল্লিশ"], ["৪৯", "ঊনপঞ্চাশ"], ["৫০", "পঞ্চাশ"],
+    ["৫১", "একান্ন"], ["৫২", "বাহান্ন"], ["৫৩", "তিপ্পান্ন"], ["৫৪", "চুয়ান্ন"], ["৫৫", "পঞ্চান্ন"], ["৫৬", "ছাপান্ন"], ["৫৭", "সাতান্ন"], ["৫৮", "আটান্ন"], ["৫৯", "ঊনষাট"], ["৬০", "ষাট"],
+    ["৬১", "একষট্টি"], ["৬২", "বাষট্টি"], ["৬৩", "তেষট্টি"], ["৬৪", "চৌষট্টি"], ["৬৫", "পঁয়ষট্টি"], ["৬৬", "ছেষট্টি"], ["৬৭", "সাতষট্টি"], ["৬৮", "আটষট্টি"], ["৬৯", "ঊনসত্তর"], ["৭০", "সত্তর"],
+    ["৭১", "একাত্তর"], ["৭২", "বাহাত্তর"], ["৭৩", "তিয়াত্তর"], ["৭৪", "চুয়াত্তর"], ["৭৫", "পঁচাত্তর"], ["৭৬", "ছিয়াত্তর"], ["৭৭", "সাতাত্তর"], ["৭৮", "আটাত্তর"], ["৭৯", "ঊনআশি"], ["৮০", "আশি"],
+    ["৮১", "একাশি"], ["৮২", "বিরাশি"], ["৮৩", "তিরাশি"], ["৮৪", "চুরাশি"], ["৮৫", "পঁচাশি"], ["৮৬", "ছিয়াশি"], ["৮৭", "সাতাশি"], ["৮৮", "আটাশি"], ["৮৯", "ঊননব্বই"], ["৯০", "নব্বই"],
+    ["৯১", "একানব্বই"], ["৯২", "বিরানব্বই"], ["৯৩", "তিরানব্বই"], ["৯৪", "চুরানব্বই"], ["৯৫", "পঁচানব্বই"], ["৯৬", "ছিয়ানব্বই"], ["৯৭", "সাতানব্বই"], ["৯৮", "আটানব্বই"], ["৯৯", "নিরানব্বই"], ["১০০", "একশত"]
+  ];
+
+  function numberReadingQuestion([digits, word]) {
+    return {
+      numberId: `number-${digits}`,
+      prompt: word,
+      answer: digits,
+      options: [],
+      inputMode: "bangla-number",
+      explanation: `“${word}” অঙ্কে ${digits} লেখা হয়।`,
+      visual: digits
+    };
+  }
+
   function addQuestion(a, b) {
     const answer = a + b;
     return q(`${number(a)} + ${number(b)} = কত?`, number(answer), [number(answer - 1), number(answer + 1), number(answer + 2)], `${number(a)} ও ${number(b)} যোগ করলে ${number(answer)} হয়।`, `${a}+${b}`);
@@ -33,6 +58,13 @@ window.MathBook = (() => {
   }
 
   const topics = [
+    {
+      id: "number-reading",
+      title: "সংখ্যা চিনি",
+      description: "১–১০০ এর বানান পড়ে অঙ্কে লিখি",
+      icon: "১ ২",
+      questions: numberSpellings.map(numberReadingQuestion)
+    },
     {
       id: "numbers-place-value",
       title: "সংখ্যা ও স্থানীয় মান",
@@ -287,9 +319,24 @@ window.MathBook = (() => {
     return topics.find((topic) => topic.id === id);
   }
 
-  function makeTopicQuiz(id) {
+  function makeTopicQuiz(id, excludedQuestionIds = []) {
     const topic = getTopic(id);
     if (!topic) return null;
+    if (topic.id === "number-reading") {
+      const excluded = new Set(excludedQuestionIds);
+      const availableQuestions = topic.questions.filter((item) => !excluded.has(item.numberId));
+      const selectableQuestions = availableQuestions.length >= 10 ? availableQuestions : topic.questions;
+      const questions = shuffle(selectableQuestions).slice(0, 10);
+      return {
+        id: `math-topic-${topic.id}`,
+        title: topic.title,
+        description: "১–১০০ থেকে র‌্যান্ডম ১০টি বানান পড়ে অঙ্ক লেখার প্রশ্ন",
+        topic,
+        availableQuestionCount: availableQuestions.length,
+        questionIds: questions.map((item) => item.numberId),
+        questions
+      };
+    }
     return {
       id: `math-topic-${topic.id}`,
       title: topic.title,

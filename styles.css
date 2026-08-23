@@ -3403,3 +3403,134 @@ main {
 @media (max-width: 760px) {
   .gk-book-art > span { font-size: 39px; }
 }
+
+/* Bangla number reading keypad */
+.number-answer-area {
+  position: relative;
+  z-index: 1;
+  max-width: 650px;
+}
+
+.number-input-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #637188;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.number-input {
+  width: 100%;
+  min-height: 67px;
+  padding: 10px 17px;
+  border: 2px solid #e7e7e3;
+  border-radius: 18px;
+  color: #34455f;
+  background: #fffdf9;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: 31px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.number-input::placeholder {
+  color: #b1b6bf;
+  font-family: "Hind Siliguri", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.number-input.is-number-correct {
+  border-color: #68bd86;
+  color: #3b7456;
+  background: #ecf9ed;
+}
+
+.number-input.is-number-wrong {
+  border-color: #ee9f9d;
+  color: #a65e61;
+  background: #fff1f0;
+}
+
+.bangla-keypad {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.keypad-key {
+  display: grid;
+  min-height: 47px;
+  place-items: center;
+  border: 1.5px solid #e7e7e3;
+  border-radius: 14px;
+  color: #4b5e78;
+  background: #fff;
+  font-family: "Baloo Da 2", "Hind Siliguri", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.keypad-key:hover {
+  border-color: var(--subject-main);
+  background: var(--subject-soft);
+  transform: translateY(-2px);
+}
+
+.keypad-backspace,
+.keypad-clear {
+  color: #9c625e;
+  background: #fff5f2;
+  font-family: "Hind Siliguri", sans-serif;
+  font-size: 16px;
+}
+
+.number-submit-button {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 15px;
+  color: #fff;
+  background: var(--subject-main);
+  box-shadow: 0 4px 0 var(--subject-shadow);
+  font-size: 15px;
+  font-weight: 800;
+  transition: transform 150ms ease, filter 150ms ease;
+}
+
+.number-submit-button:not(:disabled):hover {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+}
+
+.number-submit-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 760px) {
+  .number-input {
+    min-height: 59px;
+    border-radius: 15px;
+    font-size: 28px;
+  }
+
+  .bangla-keypad {
+    gap: 7px;
+  }
+
+  .keypad-key {
+    min-height: 43px;
+    border-radius: 12px;
+    font-size: 20px;
+  }
+}

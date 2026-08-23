@@ -462,10 +462,12 @@ const state = {
   usedFullBookQuestionIds: [],
   usedEnglishFullBookQuestionIds: [],
   usedMathFullBookQuestionIds: [],
+  usedNumberReadingQuestionIds: [],
   usedGkFullBookQuestionIds: [],
   usedAllSubjectsQuestionIds: [],
   questionIndex: 0,
-  answers: []
+  answers: [],
+  inputs: []
 };
 
 let profile = loadProfile();
@@ -961,10 +963,12 @@ function renderMathTopicList() {
 
 function renderMathTopicCard(topic) {
   const completed = profile.completed.includes(`math:math-topic-${topic.id}`);
+  const numberReading = topic.id === "number-reading";
+  const countLabel = numberReading ? "১–১০০ • প্রতি রাউন্ডে ১০টি" : `${bnNumber(topic.questions.length)}টি বাছাই করা প্রশ্ন`;
   return `
-    <button class="chapter-card" type="button" data-action="start-math-topic-quiz" data-math-topic="${topic.id}" aria-label="${topic.title} বিষয়ে ${bnNumber(topic.questions.length)}টি প্রশ্ন শুরু করো">
+    <button class="chapter-card" type="button" data-action="start-math-topic-quiz" data-math-topic="${topic.id}" aria-label="${topic.title} বিষয়ে অনুশীলন শুরু করো">
       <span class="chapter-card-icon math-topic-icon" aria-hidden="true">${topic.icon}</span>
-      <span class="chapter-card-copy"><span class="chapter-number">প্রাথমিক গণিত</span><strong>${topic.title}</strong><small>${bnNumber(topic.questions.length)}টি বাছাই করা প্রশ্ন <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
+      <span class="chapter-card-copy"><span class="chapter-number">প্রাথমিক গণিত</span><strong>${topic.title}</strong><small>${countLabel} <span aria-hidden="true">•</span> ব্যাখ্যাসহ ${completed ? "• ✓ শেষ" : ""}</small></span>
       <span class="chapter-arrow" aria-hidden="true">→</span>
     </button>
   `;
@@ -1073,11 +1077,35 @@ function renderQuizCard(subject, quiz, index) {
   `;
 }
 
+function renderBanglaNumberInput(question, answered) {
+  const value = state.inputs[state.questionIndex] || "";
+  const correct = answered && state.answers[state.questionIndex] === question.answer;
+  const fieldClass = answered ? (correct ? "is-number-correct" : "is-number-wrong") : "";
+  const digits = ["১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯", "০"];
+  return `
+    <div class="number-answer-area">
+      <label class="number-input-label" for="bangla-number-input">অঙ্কে উত্তর লেখো</label>
+      <input id="bangla-number-input" class="number-input ${fieldClass}" type="text" value="${value}" placeholder="এখানে লিখো" readonly aria-label="বাংলা অঙ্কে উত্তর" />
+      ${answered ? "" : `
+        <div class="bangla-keypad" role="group" aria-label="বাংলা সংখ্যা কিবোর্ড">
+          ${digits.map((digit) => `<button class="keypad-key" type="button" data-action="keypad-key" data-key="${digit}">${digit}</button>`).join("")}
+          <button class="keypad-key keypad-backspace" type="button" data-action="keypad-backspace" aria-label="শেষ অঙ্ক মুছো">⌫</button>
+          <button class="keypad-key keypad-clear" type="button" data-action="keypad-clear">মুছি</button>
+        </div>
+        <button class="number-submit-button" type="button" data-action="submit-number-input" ${value ? "" : "disabled"}>উত্তর যাচাই <span aria-hidden="true">✓</span></button>
+      `}
+    </div>
+  `;
+}
+
 function renderQuiz() {
   const subject = getSubject();
   const quiz = getQuiz();
   const question = quiz.questions[state.questionIndex];
-  const questionHint = question.sourceSubject ? `${question.sourceSubject} থেকে একটি প্রশ্ন` : "ভালো করে ভেবে উত্তর দাও";
+  const isBanglaNumberInput = question.inputMode === "bangla-number";
+  const questionHint = isBanglaNumberInput
+    ? "সংখ্যাটি অঙ্কে লেখো"
+    : question.sourceSubject ? `${question.sourceSubject} থেকে একটি প্রশ্ন` : "ভালো করে ভেবে উত্তর দাও";
   const answered = isAnswered();
   const selected = state.answers[state.questionIndex];
   const progress = ((state.questionIndex + 1) / quiz.questions.length) * 100;
@@ -1105,17 +1133,19 @@ function renderQuiz() {
           <div><p class="quiz-kicker">${questionHint}</p><span class="pill pill-light">১টি সঠিক উত্তর</span></div>
         </div>
         <h1 id="question-title">${question.prompt}</h1>
-        <div class="answer-grid" role="group" aria-label="উত্তর বেছে নাও">
-          ${question.options.map((option, index) => {
-            let optionClass = "";
-            if (answered) {
-              if (index === question.answer) optionClass = "is-correct";
-              else if (index === selected) optionClass = "is-wrong";
-              else optionClass = "is-muted";
-            }
-            return `<button class="answer-option ${optionClass}" type="button" data-action="answer" data-answer="${index}" ${answered ? "disabled" : ""}><span class="answer-letter">${labels[index]}</span><span>${option}</span></button>`;
-          }).join("")}
-        </div>
+        ${isBanglaNumberInput ? renderBanglaNumberInput(question, answered) : `
+          <div class="answer-grid" role="group" aria-label="উত্তর বেছে নাও">
+            ${question.options.map((option, index) => {
+              let optionClass = "";
+              if (answered) {
+                if (index === question.answer) optionClass = "is-correct";
+                else if (index === selected) optionClass = "is-wrong";
+                else optionClass = "is-muted";
+              }
+              return `<button class="answer-option ${optionClass}" type="button" data-action="answer" data-answer="${index}" ${answered ? "disabled" : ""}><span class="answer-letter">${labels[index]}</span><span>${option}</span></button>`;
+            }).join("")}
+          </div>
+        `}
         ${answered ? renderFeedback(question, selected, state.questionIndex === quiz.questions.length - 1) : ""}
       </article>
       <p class="quiz-helper">ভুল উত্তরও শেখার একটি সুন্দর সুযোগ। তুমি চেষ্টা করছো—এটাই সবচেয়ে গুরুত্বপূর্ণ!</p>
@@ -1126,9 +1156,10 @@ function renderQuiz() {
 function renderFeedback(question, selected, isLast) {
   const correct = selected === question.answer;
   const title = correct ? "দারুণ! একদম ঠিক উত্তর।" : "চেষ্টা সুন্দর হয়েছে!";
+  const correctAnswer = question.inputMode === "bangla-number" ? question.answer : question.options[question.answer];
   const answerNote = correct
     ? "দারুণ! এবার পরের প্রশ্নে যাও।"
-    : `সঠিক উত্তর: ${question.options[question.answer]}`;
+    : `সঠিক উত্তর: ${correctAnswer}`;
   const explanation = question.explanation || "উত্তরটি আবার একবার দেখে মনে রাখো।";
   return `
     <div class="feedback-row has-explanation" style="--feedback-bg: ${correct ? "#ecf9ed" : "#fff4e8"}; --feedback-title: ${correct ? "#397151" : "#a06a37"}">
@@ -1230,6 +1261,7 @@ function goHome() {
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1259,6 +1291,7 @@ function openSubject(subjectKey) {
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1272,6 +1305,7 @@ function openBanglaOptions() {
   state.quizOrigin = "bangla-options";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1285,6 +1319,7 @@ function openEnglishOptions() {
   state.quizOrigin = "english-options";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1298,6 +1333,7 @@ function openEnglishTopicList() {
   state.quizOrigin = "english-topic";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1312,6 +1348,7 @@ function openMathOptions() {
   state.quizOrigin = "math-options";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1326,6 +1363,7 @@ function openMathTopicList() {
   state.quizOrigin = "math-topic";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1341,6 +1379,7 @@ function openGkOptions() {
   state.quizOrigin = "gk-options";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1356,6 +1395,7 @@ function openGkTopicList() {
   state.quizOrigin = "gk-topic";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1369,6 +1409,7 @@ function openTopicList() {
   state.quizOrigin = "topic";
   state.generatedQuiz = null;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1383,6 +1424,7 @@ function startQuiz(subjectKey, quizId) {
   state.generatedQuiz = null;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1399,6 +1441,7 @@ function startTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1415,6 +1458,7 @@ function startEnglishTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1435,13 +1479,21 @@ function startEnglishFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
 
 function startMathTopicQuiz(topicId) {
-  const quiz = MathBook.makeTopicQuiz(topicId);
+  let quiz = MathBook.makeTopicQuiz(topicId, topicId === "number-reading" ? state.usedNumberReadingQuestionIds : []);
   if (!quiz) return;
+  if (topicId === "number-reading") {
+    if (quiz.availableQuestionCount < 10) {
+      state.usedNumberReadingQuestionIds = [];
+      quiz = MathBook.makeTopicQuiz(topicId);
+    }
+    state.usedNumberReadingQuestionIds = [...state.usedNumberReadingQuestionIds, ...quiz.questionIds];
+  }
   state.screen = "quiz";
   state.subjectKey = "math";
   state.quizId = quiz.id;
@@ -1452,6 +1504,7 @@ function startMathTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1473,6 +1526,7 @@ function startMathFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1491,6 +1545,7 @@ function startGkTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1513,6 +1568,7 @@ function startGkFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1535,6 +1591,7 @@ function startAllSubjectsQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1556,6 +1613,7 @@ function startFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
+  state.inputs = [];
   render();
   moveToTop();
 }
@@ -1650,6 +1708,27 @@ function handleAction(actionTarget) {
 
   if (action === "start-gk-full-book") startGkFullBookQuiz();
 
+  const activeQuestion = state.screen === "quiz" ? getQuiz()?.questions[state.questionIndex] : null;
+  if (activeQuestion?.inputMode === "bangla-number" && !isAnswered()) {
+    const currentValue = state.inputs[state.questionIndex] || "";
+    if (action === "keypad-key" && currentValue.length < 3) {
+      state.inputs[state.questionIndex] = `${currentValue}${actionTarget.dataset.key}`;
+      render();
+    }
+    if (action === "keypad-backspace") {
+      state.inputs[state.questionIndex] = currentValue.slice(0, -1);
+      render();
+    }
+    if (action === "keypad-clear") {
+      state.inputs[state.questionIndex] = "";
+      render();
+    }
+    if (action === "submit-number-input" && currentValue) {
+      state.answers[state.questionIndex] = currentValue;
+      render();
+    }
+  }
+
   if (action === "return-subject" || action === "quit-quiz") returnFromQuiz();
 
   if (action === "answer" && state.screen === "quiz" && !isAnswered()) {
@@ -1689,6 +1768,27 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (state.screen !== "quiz" || isAnswered() || event.altKey || event.ctrlKey || event.metaKey) return;
+  const activeQuestion = getQuiz()?.questions[state.questionIndex];
+  if (activeQuestion?.inputMode === "bangla-number") {
+    const digitMap = { "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯", "০": "০", "১": "১", "২": "২", "৩": "৩", "৪": "৪", "৫": "৫", "৬": "৬", "৭": "৭", "৮": "৮", "৯": "৯" };
+    const currentValue = state.inputs[state.questionIndex] || "";
+    if (digitMap[event.key] && currentValue.length < 3) {
+      event.preventDefault();
+      state.inputs[state.questionIndex] = `${currentValue}${digitMap[event.key]}`;
+      render();
+    }
+    if (event.key === "Backspace") {
+      event.preventDefault();
+      state.inputs[state.questionIndex] = currentValue.slice(0, -1);
+      render();
+    }
+    if (event.key === "Enter" && currentValue) {
+      event.preventDefault();
+      state.answers[state.questionIndex] = currentValue;
+      render();
+    }
+    return;
+  }
   const answerIndex = Number(event.key) - 1;
   if (answerIndex >= 0 && answerIndex <= 3) {
     event.preventDefault();
