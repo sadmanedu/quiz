@@ -637,7 +637,7 @@ function renderHome() {
       </div>
     </section>
 
-    <footer class="site-footer">ঝিলমিল কুইজ <span aria-hidden="true">•</span> আনন্দে শেখার ছোট্ট জায়গা</footer>
+    <footer class="site-footer">Developed by SADMAN</footer>
   `;
 }
 
