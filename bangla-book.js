@@ -91,41 +91,6 @@ window.BanglaBook = (() => {
     return { prompt, options: choices, answer, explanation, visual };
   }
 
-  function lessonNumbers(lesson) {
-    const candidates = [lesson, lesson - 1, lesson + 1, lesson - 2, lesson + 2, lesson - 3, lesson + 3];
-    const values = [];
-    candidates.forEach((value) => {
-      if (value >= 1 && value <= 53 && !values.includes(value) && values.length < 4) values.push(value);
-    });
-    for (let value = 1; values.length < 4; value += 1) {
-      if (!values.includes(value)) values.push(value);
-    }
-    return values.map((value) => `${bn(value)} নম্বর`);
-  }
-
-  function commonQuestions(chapterInfo) {
-    const lessonOptions = lessonNumbers(chapterInfo.lesson);
-    const correctLessonIndex = lessonOptions.indexOf(`${bn(chapterInfo.lesson)} নম্বর`);
-    return [
-      question(`‘${chapterInfo.title}’ কোন পাঠের নাম?`, chapterInfo.title, ["আমার খেলা", "নতুন বন্ধু", "রঙিন ছবি"], `এই পাঠের শিরোনাম হলো ‘${chapterInfo.title}’।`, chapterInfo.icon),
-      {
-        prompt: `‘${chapterInfo.title}’ পাঠটি কত নম্বর পাঠ?`,
-        options: lessonOptions,
-        answer: correctLessonIndex,
-        explanation: `‘${chapterInfo.title}’ বইয়ের ${bn(chapterInfo.lesson)} নম্বর পাঠ।`,
-        visual: bn(chapterInfo.lesson)
-      },
-      question("পাঠটি মন দিয়ে পড়ার আগে কী করা ভালো?", "বই খুলে শিরোনাম দেখি", ["বই বন্ধ করি", "কথা বলি", "দৌড়ে যাই"], "শিরোনাম দেখলে পাঠটি কী নিয়ে, তা আগে থেকেই বুঝতে পারি।", "📖"),
-      question("কোনো শব্দ বুঝতে না পারলে কী করব?", "শিক্ষক বা বড়দের জিজ্ঞেস করব", ["শব্দটি বাদ দেব", "খাতা ছিঁড়ে ফেলব", "ভুল অর্থ বলব"], "না বোঝা শব্দ জেনে নিলেই পাঠটি আরও ভালো বোঝা যায়।", "💡"),
-      question("প্রশ্নের সঠিক উত্তর দিতে প্রথমে কী করা দরকার?", "প্রশ্নটি ভালো করে পড়া", ["অনুমান করে বলা", "অন্যদিকে তাকানো", "তাড়াহুড়ো করা"], "প্রশ্নটি ভালো করে পড়লে কী জানতে চাওয়া হয়েছে তা বোঝা যায়।", "?"),
-      question("বাংলা শব্দ তৈরি হয় কী দিয়ে?", "বর্ণ দিয়ে", ["শুধু ছবি দিয়ে", "শুধু সংখ্যা দিয়ে", "শুধু রং দিয়ে"], "বর্ণ একসঙ্গে বসে শব্দ তৈরি করে।", "অ"),
-      question("সাধারণত একটি বাক্যের শেষে কোন চিহ্ন বসে?", "।", ["?", "!", ","], "বিবৃতিমূলক বাক্যের শেষে দাঁড়ি (।) বসে।", "।"),
-      question("পড়ার সময় বইটি কীভাবে রাখব?", "পরিষ্কার ও যত্নে", ["মেঝেতে ছুড়ে", "ভিজিয়ে", "ছিঁড়ে"], "বই যত্নে রাখলে অনেক দিন ভালো থাকে।", "📚"),
-      question("ভুল হলে কী করা ভালো?", "ভুল থেকে শিখে আবার চেষ্টা করা", ["কাঁদা", "বই লুকানো", "চেষ্টা ছেড়ে দেওয়া"], "ভুল থেকে শেখা যায়, তাই আবার চেষ্টা করা ভালো।", "🌟"),
-      question("পাঠ শেষ হলে কোন কাজটি ভালো?", "মূল কথাগুলো মনে করা", ["বই হারিয়ে ফেলা", "পাতা ছিঁড়ে ফেলা", "না পড়ে চলে যাওয়া"], "মূল কথা মনে করলে পাঠটি অনেক দিন মনে থাকে।", "✓")
-    ];
-  }
-
   function identityQuestions() {
     return [
       question("নিজের পরিচয় দিতে প্রথমে কী বলি?", "নিজের নাম", ["শুধু প্রিয় রং", "শুধু খেলনা", "শুধু খাবারের নাম"], "নিজের নাম বলেই আমরা পরিচয় শুরু করি।", "👋"),
@@ -514,9 +479,371 @@ window.BanglaBook = (() => {
     return (factories[type] || readWriteQuestions)();
   }
 
+
+  const vocabularyByType = {
+    identity: [
+      { word: "নাম", initial: "ন" }, { word: "পরিচয়", initial: "প" }, { word: "শ্রেণি", initial: "শ" }, { word: "বিদ্যালয়", initial: "ব" }, { word: "ঠিকানা", initial: "ঠ" }
+    ],
+    drawing: [
+      { word: "ছবি", initial: "ছ" }, { word: "রং", initial: "র" }, { word: "পেন্সিল", initial: "প" }, { word: "কাগজ", initial: "ক" }, { word: "আকাশ", initial: "আ" }
+    ],
+    school: [
+      { word: "শিক্ষক", initial: "শ" }, { word: "খাতা", initial: "খ" }, { word: "মাঠ", initial: "ম" }, { word: "ব্যাগ", initial: "ব" }, { word: "কলম", initial: "ক" }
+    ],
+    routine: [
+      { word: "দাঁত", initial: "দ" }, { word: "হাত", initial: "হ" }, { word: "খাবার", initial: "খ" }, { word: "ঘুম", initial: "ঘ" }, { word: "গোসল", initial: "গ" }
+    ],
+    rhyme: [
+      { word: "ছড়া", initial: "ছ" }, { word: "সুর", initial: "স" }, { word: "শব্দ", initial: "শ" }, { word: "মিল", initial: "ম" }, { word: "লাইন", initial: "ল" }
+    ],
+    story: [
+      { word: "রাখাল", initial: "র" }, { word: "বাঘ", initial: "ব" }, { word: "গরু", initial: "গ" }, { word: "মানুষ", initial: "ম" }, { word: "সত্য", initial: "স" }
+    ],
+    train: [
+      { word: "ট্রেন", initial: "ট" }, { word: "রেললাইন", initial: "র" }, { word: "স্টেশন", initial: "স" }, { word: "টিকিট", initial: "ট" }, { word: "যাত্রী", initial: "য" }
+    ],
+    words: [
+      { word: "শব্দ", initial: "শ" }, { word: "বর্ণ", initial: "ব" }, { word: "বাক্য", initial: "ব" }, { word: "মাছ", initial: "ম" }, { word: "আম", initial: "আ" }
+    ],
+    "read-write": [
+      { word: "পড়া", initial: "প" }, { word: "লেখা", initial: "ল" }, { word: "বাক্য", initial: "ব" }, { word: "দাঁড়ি", initial: "দ" }, { word: "খাতা", initial: "খ" }
+    ],
+    home: [
+      { word: "বাড়ি", initial: "ব" }, { word: "পরিবার", initial: "প" }, { word: "ঘর", initial: "ঘ" }, { word: "মামা", initial: "ম" }, { word: "তুলি", initial: "ত" }
+    ],
+    days: [
+      { word: "রবিবার", initial: "র" }, { word: "সোমবার", initial: "স" }, { word: "মঙ্গলবার", initial: "ম" }, { word: "বুধবার", initial: "ব" }, { word: "শনিবার", initial: "শ" }
+    ],
+    country: [
+      { word: "বাংলাদেশ", initial: "ব" }, { word: "পতাকা", initial: "প" }, { word: "ঢাকা", initial: "ঢ" }, { word: "শাপলা", initial: "শ" }, { word: "বাংলা", initial: "ব" }
+    ],
+    fish: [
+      { word: "ইলিশ", initial: "ই" }, { word: "মাছ", initial: "ম" }, { word: "পাখনা", initial: "প" }, { word: "আঁশ", initial: "আ" }, { word: "নদী", initial: "ন" }
+    ],
+    numbers: [
+      { word: "সংখ্যা", initial: "স" }, { word: "যোগ", initial: "য" }, { word: "বিয়োগ", initial: "ব" }, { word: "ত্রিভুজ", initial: "ত" }, { word: "বর্গ", initial: "ব" }
+    ],
+    war: [
+      { word: "মুক্তিযুদ্ধ", initial: "ম" }, { word: "বিজয়", initial: "ব" }, { word: "পতাকা", initial: "প" }, { word: "দেশ", initial: "দ" }, { word: "শ্রদ্ধা", initial: "শ" }
+    ],
+    address: [
+      { word: "ঠিকানা", initial: "ঠ" }, { word: "বাড়ি", initial: "ব" }, { word: "গ্রাম", initial: "গ" }, { word: "এলাকা", initial: "এ" }, { word: "পরিবার", initial: "প" }
+    ]
+  };
+
+  const fallbackWords = ["কলম", "ঘর", "নদী", "বই", "মাঠ", "সাপ", "রথ", "আম", "ইলিশ"];
+  const letterChoices = ["অ", "আ", "ই", "উ", "এ", "ও", "ক", "খ", "গ", "ঘ", "চ", "জ", "ট", "ত", "দ", "ন", "প", "ব", "ম", "য", "র", "ল", "শ", "স", "হ"];
+
+  function vocabularyQuestions(words) {
+    return words.flatMap((item) => {
+      const wrongLetters = letterChoices.filter((letter) => letter !== item.initial).slice(0, 3);
+      const wrongWords = [...words.map((entry) => entry.word), ...fallbackWords]
+        .filter((word) => word !== item.word && !word.startsWith(item.initial))
+        .slice(0, 3);
+      return [
+        question(`‘${item.word}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`, item.initial, wrongLetters, `‘${item.word}’ শব্দের প্রথম বর্ণ ‘${item.initial}’।`, item.initial),
+        question(`কোন শব্দটি ‘${item.initial}’ দিয়ে শুরু?`, item.word, wrongWords, `‘${item.word}’ শব্দটি ‘${item.initial}’ বর্ণ দিয়ে শুরু।`, item.word)
+      ];
+    });
+  }
+
+  const vowelWords = {
+    "অ": ["অজগর", "অমল", "অলি", "অরণ্য"],
+    "আ": ["আম", "আতা", "আকাশ", "আলো"],
+    "ই": ["ইলিশ", "ইট", "ইঁদুর", "ইচ্ছা"],
+    "ঈ": ["ঈদ", "ঈগল", "ঈশ্বর", "ঈর্ষা"],
+    "উ": ["উট", "উল", "উৎসব", "উঠান"],
+    "ঊ": ["ঊষা", "ঊনিশ", "ঊর্ধ্ব", "ঊষর"],
+    "ঋ": ["ঋষি", "ঋণ", "ঋতু", "ঋজু"],
+    "এ": ["এক", "একতারা", "এলাচ", "এখন"],
+    "ঐ": ["ঐক্য", "ঐতিহ্য", "ঐশী", "ঐরাবত"],
+    "ও": ["ওল", "ওজন", "ওষুধ", "ওরা"],
+    "ঔ": ["ঔষধ", "ঔষধি", "ঔরস", "ঔদার্য"]
+  };
+
+  function wordsForVowel(vowel) {
+    return vowelWords[vowel] || ["শব্দ", "বই", "ঘর", "কলম"];
+  }
+
+  function vowelPairPractice(chapterInfo) {
+    const first = chapterInfo.letters[0];
+    const second = chapterInfo.letters[1] || first;
+    const firstWords = wordsForVowel(first);
+    const secondWords = wordsForVowel(second);
+    const order = ["অ", "আ", "ই", "ঈ", "উ", "ঊ", "ঋ", "এ", "ঐ", "ও", "ঔ"];
+    const firstIndex = order.indexOf(first);
+    const secondIndex = order.indexOf(second);
+    const afterFirst = order[firstIndex + 1] || "ক";
+    const beforeFirst = order[firstIndex - 1] || "ক";
+    const afterSecond = order[secondIndex + 1] || "ক";
+    const notFirstWords = [...secondWords, "কলম", "ঘর", "নদী"].filter((word) => !word.startsWith(first));
+    const notSecondWords = [...firstWords, "কলম", "ঘর", "নদী"].filter((word) => !word.startsWith(second));
+    return [
+      question("কোনটি স্বরবর্ণ?", first, ["ক", "ম", "ত"], `‘${first}’ একটি স্বরবর্ণ।`, first),
+      question("কোনটি ব্যঞ্জনবর্ণ?", "ক", [first, second, "ই"], "‘ক’ একটি ব্যঞ্জনবর্ণ।", "ক"),
+      question(`‘${firstWords[0]}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`, first, [second, "ক", "ম"], `‘${firstWords[0]}’ শব্দের প্রথম বর্ণ ‘${first}’।`, firstWords[0]),
+      question(`কোন শব্দটি ‘${first}’ দিয়ে শুরু?`, firstWords[0], notFirstWords, `‘${firstWords[0]}’ শব্দটি ‘${first}’ দিয়ে শুরু।`, first),
+      question(`‘${firstWords[1]}’ শব্দের প্রথম বর্ণ কী?`, first, [second, "গ", "ন"], `‘${firstWords[1]}’ শব্দটি ‘${first}’ দিয়ে শুরু।`, firstWords[1]),
+      question(`কোন শব্দটি ‘${first}’ দিয়ে শুরু নয়?`, "কলম", [firstWords[0], firstWords[1], firstWords[2]], "‘কলম’ শব্দটি ‘ক’ দিয়ে শুরু; অন্য শব্দগুলো ‘${first}’ দিয়ে শুরু।", "কলম"),
+      question(`‘${secondWords[0]}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`, second, [first, "খ", "স"], `‘${secondWords[0]}’ শব্দের প্রথম বর্ণ ‘${second}’।`, secondWords[0]),
+      question(`কোন শব্দটি ‘${second}’ দিয়ে শুরু?`, secondWords[0], notSecondWords, `‘${secondWords[0]}’ শব্দটি ‘${second}’ দিয়ে শুরু।`, second),
+      question(`‘${secondWords[1]}’ শব্দের প্রথম বর্ণ কী?`, second, [first, "ব", "ল"], `‘${secondWords[1]}’ শব্দটি ‘${second}’ দিয়ে শুরু।`, secondWords[1]),
+      question(`কোন শব্দটি ‘${second}’ দিয়ে শুরু নয়?`, "ঘর", [secondWords[0], secondWords[1], secondWords[2]], "‘ঘর’ শব্দটি ‘ঘ’ দিয়ে শুরু; অন্য শব্দগুলো ‘${second}’ দিয়ে শুরু।", "ঘর"),
+      question(`‘${first}’ এর পরে কোন স্বরবর্ণ আসে?`, afterFirst, [first, second, "ক"], `স্বরবর্ণের ক্রমে ‘${first}’ এর পরে ‘${afterFirst}’ আসে।`, first),
+      question(`‘${first}’ এর আগে কোন স্বরবর্ণ আসে?`, beforeFirst, [first, second, "গ"], `স্বরবর্ণের ক্রমে ‘${first}’ এর আগে ‘${beforeFirst}’ আসে।`, first),
+      question(`‘${second}’ এর পরে কোন স্বরবর্ণ আসে?`, afterSecond, [first, second, "খ"], `স্বরবর্ণের ক্রমে ‘${second}’ এর পরে ‘${afterSecond}’ আসে।`, second),
+      question(`‘${first}’ ও ‘${second}’—দুটিই কী?`, "স্বরবর্ণ", ["ব্যঞ্জনবর্ণ", "সংখ্যা", "চিহ্ন"], `‘${first}’ ও ‘${second}’ দুটিই স্বরবর্ণ।`, "অ"),
+      question(`কোন জোড়াটি সঠিক?`, `${first} — ${firstWords[0]}`, [`ক — ${firstWords[0]}`, `${second} — কলম`, `ম — ${firstWords[1]}`], `‘${firstWords[0]}’ শব্দটি ‘${first}’ দিয়ে শুরু।`, first),
+      question(`কোন জোড়াটি সঠিক?`, `${second} — ${secondWords[0]}`, [`ক — ${secondWords[0]}`, `${first} — ঘর`, `ম — ${secondWords[1]}`], `‘${secondWords[0]}’ শব্দটি ‘${second}’ দিয়ে শুরু।`, second),
+      question(`‘${firstWords[2]}’ শব্দে প্রথমে কোন ধ্বনি শোনা যায়?`, first, [second, "ক", "ত"], `‘${firstWords[2]}’ উচ্চারণের শুরুতে ‘${first}’ ধ্বনি শোনা যায়।`, "🔊"),
+      question(`‘${secondWords[2]}’ শব্দে প্রথমে কোন ধ্বনি শোনা যায়?`, second, [first, "গ", "ন"], `‘${secondWords[2]}’ উচ্চারণের শুরুতে ‘${second}’ ধ্বনি শোনা যায়।`, "🔊"),
+      question("কোন বর্ণ নিজে থেকেই উচ্চারণ করা যায়?", "স্বরবর্ণ", ["ব্যঞ্জনবর্ণ", "কারচিহ্ন", "সংখ্যা"], "স্বরবর্ণ নিজের স্বরেই উচ্চারণ করা যায়।", "🔊"),
+      question("স্বরবর্ণ চিনলে কোন কাজটি সহজ হয়?", "শব্দ পড়া", ["শুধু রং করা", "শুধু গোনা", "শুধু আঁকা"], "স্বরবর্ণ চিনলে শব্দের শুরু ও উচ্চারণ বুঝতে সুবিধা হয়।", "📖")
+    ];
+  }
+
+  function allVowelPractice() {
+    return [
+      question("কোনটি স্বরবর্ণ?", "অ", ["ক", "খ", "গ"], "‘অ’ একটি স্বরবর্ণ।", "অ"),
+      question("কোনটি স্বরবর্ণ?", "ঐ", ["ত", "দ", "ন"], "‘ঐ’ একটি স্বরবর্ণ।", "ঐ"),
+      question("কোনটি ব্যঞ্জনবর্ণ?", "ম", ["আ", "উ", "এ"], "‘ম’ একটি ব্যঞ্জনবর্ণ।", "ম"),
+      question("অ, আ, ই—এর পরে কোন স্বরবর্ণ?", "ঈ", ["উ", "এ", "ও"], "স্বরবর্ণের ক্রমে ‘ই’ এর পরে ‘ঈ’ আসে।", "ঈ"),
+      question("উ এর পরে কোন স্বরবর্ণ?", "ঊ", ["ঋ", "এ", "ঐ"], "স্বরবর্ণের ক্রমে ‘উ’ এর পরে ‘ঊ’ আসে।", "ঊ"),
+      question("এ এর পরে কোন স্বরবর্ণ?", "ঐ", ["ও", "ঔ", "আ"], "স্বরবর্ণের ক্রমে ‘এ’ এর পরে ‘ঐ’ আসে।", "ঐ"),
+      question("ও এর পরে কোন স্বরবর্ণ?", "ঔ", ["অ", "আ", "ই"], "স্বরবর্ণের ক্রমে ‘ও’ এর পরে ‘ঔ’ আসে।", "ঔ"),
+      question("‘আম’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "আ", ["অ", "ম", "ক"], "‘আম’ শব্দটির প্রথম বর্ণ ‘আ’।", "আম"),
+      question("‘ইলিশ’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "ই", ["ঈ", "উ", "ক"], "‘ইলিশ’ শব্দটির প্রথম বর্ণ ‘ই’।", "ইলিশ"),
+      question("‘উট’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "উ", ["ঊ", "ঋ", "ত"], "‘উট’ শব্দটির প্রথম বর্ণ ‘উ’।", "উট"),
+      question("‘ঋতু’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "ঋ", ["উ", "ঊ", "র"], "‘ঋতু’ শব্দটির প্রথম বর্ণ ‘ঋ’।", "ঋতু"),
+      question("‘একতারা’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "এ", ["ঐ", "ও", "ক"], "‘একতারা’ শব্দটির প্রথম বর্ণ ‘এ’।", "একতারা"),
+      question("‘ওল’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "ও", ["ঔ", "অ", "ল"], "‘ওল’ শব্দটির প্রথম বর্ণ ‘ও’।", "ওল"),
+      question("কোন শব্দটি ‘আ’ দিয়ে শুরু?", "আকাশ", ["কলম", "ঘর", "নদী"], "‘আকাশ’ শব্দটি ‘আ’ দিয়ে শুরু।", "আ"),
+      question("কোন শব্দটি ‘এ’ দিয়ে শুরু?", "এলাচ", ["মাছ", "বই", "গাছ"], "‘এলাচ’ শব্দটি ‘এ’ দিয়ে শুরু।", "এ"),
+      question("কোন শব্দটি ‘ঔ’ দিয়ে শুরু?", "ঔষধ", ["ওল", "উট", "আম"], "‘ঔষধ’ শব্দটি ‘ঔ’ দিয়ে শুরু।", "ঔ"),
+      question("স্বরবর্ণ উচ্চারণে কি অন্য বর্ণ লাগে?", "না", ["সবসময় লাগে", "শুধু সংখ্যা লাগে", "শুধু ছবি লাগে"], "স্বরবর্ণ নিজের স্বরেই উচ্চারণ করা যায়।", "🔊"),
+      question("ব্যঞ্জনবর্ণ উচ্চারণে সাধারণত কী লাগে?", "স্বরবর্ণের সাহায্য", ["শুধু রং", "শুধু সংখ্যা", "কিছুই না"], "ব্যঞ্জনবর্ণের সঙ্গে স্বরবর্ণ যোগ হলে উচ্চারণ সহজ হয়।", "অ"),
+      question("কোন জোড়াটি শুধু স্বরবর্ণের?", "অ, আ", ["ক, খ", "ম, ন", "ত, থ"], "‘অ’ ও ‘আ’—দুটিই স্বরবর্ণ।", "অ"),
+      question("কোন জোড়াটিতে একটি স্বরবর্ণ ও একটি ব্যঞ্জনবর্ণ আছে?", "আ, ক", ["অ, ই", "খ, গ", "উ, এ"], "‘আ’ স্বরবর্ণ এবং ‘ক’ ব্যঞ্জনবর্ণ।", "আ")
+    ];
+  }
+
+  const karInfo = {
+    "া": { name: "আ-কার", form: "কা", words: ["মা", "কলা", "বাবা", "পাতা"] },
+    "ি": { name: "ই-কার", form: "কি", words: ["ছবি", "তিল", "দিন", "মিল"] },
+    "ী": { name: "ঈ-কার", form: "কী", words: ["নীল", "শীত", "দীপ", "তীর"] },
+    "ু": { name: "উ-কার", form: "কু", words: ["কুল", "চুল", "ঘুম", "সুর"] },
+    "ূ": { name: "ঊ-কার", form: "কূ", words: ["ভূত", "দূর", "চূড়া", "সূর্য"] },
+    "ৃ": { name: "ঋ-কার", form: "কৃ", words: ["কৃষক", "বৃক্ষ", "মৃগ", "পৃথিবী"] },
+    "ে": { name: "এ-কার", form: "কে", words: ["মেঘ", "দেশ", "বেশ", "বেলা"] },
+    "ৈ": { name: "ঐ-কার", form: "কৈ", words: ["বৈঠক", "শৈশব", "দৈত্য", "কৈশোর"] },
+    "ো": { name: "ও-কার", form: "কো", words: ["গোল", "ঘোড়া", "দোল", "মোরগ"] },
+    "ৌ": { name: "ঔ-কার", form: "কৌ", words: ["নৌকা", "মৌমাছি", "চৌকি", "কৌতুক"] }
+  };
+
+  function karUnit(info, mark, alternate) {
+    const otherWords = [...alternate.words, "ঘর", "কলম", "নদী"].filter((word) => !info.words.includes(word));
+    return [
+      question(`‘${mark}’ চিহ্নটির নাম কী?`, info.name, ["দাঁড়ি", "প্রশ্নচিহ্ন", "বিসর্গ"], `‘${mark}’ হলো ${info.name}।`, mark),
+      question(`ক + ${mark} = কোনটি?`, info.form, ["ক", "কি", "কু"].filter((item) => item !== info.form), `‘ক’ এর সঙ্গে ${info.name} যোগ হলে ‘${info.form}’ হয়।`, info.form),
+      question(`কোন শব্দে ${info.name} আছে?`, info.words[0], otherWords, `‘${info.words[0]}’ শব্দে ${info.name} আছে।`, info.words[0]),
+      question(`‘${info.words[1]}’ শব্দে কোন কারচিহ্ন আছে?`, mark, [alternateMark(alternate), "ং", "ঃ"], `‘${info.words[1]}’ শব্দে ${info.name} ব্যবহৃত হয়েছে।`, mark),
+      question(`কোন শব্দে ${info.name} নেই?`, "ঘর", [info.words[0], info.words[1], info.words[2]], `‘ঘর’ শব্দে ${info.name} নেই; অন্য শব্দগুলোতে আছে।`, "ঘর"),
+      question(`‘${info.words[2]}’ শব্দের কারচিহ্নটি কী?`, mark, [alternateMark(alternate), "।", "?"], `‘${info.words[2]}’ শব্দে ${info.name} আছে।`, mark),
+      question(`কোনটি ${info.name}-যুক্ত ধ্বনি?`, info.form, ["ক", "কা", "কো"].filter((item) => item !== info.form), `‘${info.form}’ ধ্বনিতে ${info.name} আছে।`, info.form),
+      question(`‘${info.words[3]}’ শব্দটি পড়তে কোন কারচিহ্ন চিনতে হবে?`, info.name, [alternate.name, "দাঁড়ি", "চন্দ্রবিন্দু"], `‘${info.words[3]}’ শব্দে ${info.name} ব্যবহৃত হয়েছে।`, info.words[3]),
+      question(`‘${mark}’ কারচিহ্নটি বর্ণের সঙ্গে বসে কী বদলায়?`, "উচ্চারণ", ["রং", "আকারের মাপ", "পাতার সংখ্যা"], "কারচিহ্ন বর্ণের উচ্চারণ বদলাতে সাহায্য করে।", "🔊"),
+      question(`‘${info.words[0]}’ ও ‘${info.words[1]}’—দুটিতেই কোন কারচিহ্ন আছে?`, mark, [alternateMark(alternate), "ঃ", "ং"], `দুই শব্দেই ${info.name} আছে।`, mark)
+    ];
+  }
+
+  function alternateMark(info) {
+    return Object.entries(karInfo).find(([, value]) => value.name === info.name)?.[0] || "ি";
+  }
+
+  function singleKarPractice(info, mark) {
+    const words = info.words;
+    return [
+      question(`‘${mark}’ চিহ্নটির নাম কী?`, info.name, ["দাঁড়ি", "প্রশ্নচিহ্ন", "বিসর্গ"], `‘${mark}’ হলো ${info.name}।`, mark),
+      question(`ক + ${mark} = কোনটি?`, info.form, ["ক", "কা", "কি"].filter((item) => item !== info.form), `‘ক’ এর সঙ্গে ${info.name} যোগ হলে ‘${info.form}’ হয়।`, info.form),
+      ...words.flatMap((word) => {
+        const firstLetter = Array.from(word)[0];
+        return [
+          question(`‘${word}’ শব্দে কোন কারচিহ্ন আছে?`, mark, ["া", "ি", "ু"].filter((item) => item !== mark), `‘${word}’ শব্দে ${info.name} আছে।`, word),
+          question(`‘${word}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`, firstLetter, ["ক", "ম", "ন", "প", "ব", "শ"].filter((item) => item !== firstLetter).slice(0, 3), `‘${word}’ শব্দের প্রথম বর্ণ ‘${firstLetter}’।`, firstLetter)
+        ];
+      }),
+      question(`‘${info.form}’ ধ্বনিটি কোন কারচিহ্নে গঠিত?`, info.name, ["দাঁড়ি", "বিসর্গ", "চন্দ্রবিন্দু"], `‘${info.form}’ ধ্বনিতে ${info.name} আছে।`, info.form),
+      question(`${info.name} যুক্ত শব্দ কোনটি?`, words[0], ["ঘর", "বল", "কলম"], `‘${words[0]}’ শব্দে ${info.name} ব্যবহৃত হয়েছে।`, words[0]),
+      question(`‘${words[1]}’ শব্দের সঠিক উচ্চারণে কোন কারচিহ্ন দরকার?`, mark, ["ং", "ঃ", "।"], `‘${words[1]}’ শব্দে ${info.name} আছে।`, mark),
+      question(`কারচিহ্ন বসলে ‘ক’ থেকে কী হয়?`, info.form, ["ক", "খ", "গ"], `‘ক’ এর সঙ্গে ${info.name} যোগ হয়ে ‘${info.form}’ হয়।`, info.form),
+      question(`${info.name} বর্ণের সঙ্গে কোথায় বসে?`, "বর্ণের পাশে বা নিচে", ["শুধু পাতার শেষে", "শুধু সংখ্যার পাশে", "শুধু ছবির নিচে"], "কারচিহ্ন বর্ণের সঙ্গে বসে নতুন উচ্চারণ তৈরি করে।", "অ"),
+      question(`‘${words[2]}’ শব্দে ${info.name} চেনা কেন দরকার?`, "সঠিক উচ্চারণের জন্য", ["শুধু রং করার জন্য", "শুধু গোনার জন্য", "শুধু আঁকার জন্য"], "কারচিহ্ন চিনলে শব্দটি ঠিকভাবে পড়া যায়।", "🔊"),
+      question(`কোনটি ${info.name}-এর চিহ্ন?`, mark, ["ং", "ঃ", "।"], `‘${mark}’ হলো ${info.name}-এর চিহ্ন।`, mark),
+      question(`‘${words[1]}’ শব্দে কতটি ${info.name} আছে?`, "১টি", ["২টি", "৩টি", "একটিও নেই"], `‘${words[1]}’ শব্দে একবার ${info.name} আছে।`, "1"),
+      question(`‘${words[0]}’ ও ‘${words[1]}’—দুটিতে কোন কারচিহ্ন আছে?`, info.name, ["দাঁড়ি", "বিসর্গ", "চন্দ্রবিন্দু"], `দুই শব্দেই ${info.name} ব্যবহৃত হয়েছে।`, mark),
+      question(`কোন জোড়াটিতে ${info.name} আছে?`, `${words[2]} ও ${words[3]}`, ["ঘর ও কলম", "বই ও নদী", "বল ও রথ"], `‘${words[2]}’ ও ‘${words[3]}’—দুই শব্দেই ${info.name} আছে।`, mark)
+    ].slice(0, 20);
+  }
+
+  function karPractice(chapterInfo) {
+    const marks = chapterInfo.marks.length > 2 ? ["া", "ি"] : chapterInfo.marks;
+    const firstMark = marks[0];
+    const secondMark = marks[1] || marks[0];
+    const first = karInfo[firstMark];
+    const second = karInfo[secondMark];
+    if (firstMark === secondMark) return singleKarPractice(first, firstMark);
+    return [...karUnit(first, firstMark, second), ...karUnit(second, secondMark, first)].slice(0, 20);
+  }
+
+  const letterSamples = {
+    "ক": { word: "কলা", position: "start" }, "খ": { word: "খাতা", position: "start" }, "গ": { word: "গাছ", position: "start" }, "ঘ": { word: "ঘর", position: "start" }, "ঙ": { word: "ব্যাঙ", position: "end" },
+    "চ": { word: "চাকা", position: "start" }, "ছ": { word: "ছাতা", position: "start" }, "জ": { word: "জাম", position: "start" }, "ঝ": { word: "ঝিনুক", position: "start" }, "ঞ": { word: "গুঞ্জন", position: "middle" },
+    "ট": { word: "টুপি", position: "start" }, "ঠ": { word: "ঠেলা", position: "start" }, "ড": { word: "ডাব", position: "start" }, "ঢ": { word: "ঢোল", position: "start" }, "ণ": { word: "হরিণ", position: "end" },
+    "ত": { word: "তাল", position: "start" }, "থ": { word: "থালা", position: "start" }, "দ": { word: "দোয়েল", position: "start" }, "ধ": { word: "ধান", position: "start" }, "ন": { word: "নদী", position: "start" },
+    "প": { word: "পাতা", position: "start" }, "ফ": { word: "ফুল", position: "start" }, "ব": { word: "বই", position: "start" }, "ভ": { word: "ভালুক", position: "start" }, "ম": { word: "মাছ", position: "start" },
+    "য": { word: "যাদু", position: "start" }, "র": { word: "রথ", position: "start" }, "ল": { word: "লাল", position: "start" },
+    "শ": { word: "শাপলা", position: "start" }, "ষ": { word: "ষাঁড়", position: "start" }, "স": { word: "সাপ", position: "start" }, "হ": { word: "হাতি", position: "start" },
+    "ড়": { word: "গাড়ি", position: "middle" }, "ঢ়": { word: "আষাঢ়", position: "end" }, "য়": { word: "হয়", position: "end" }, "ৎ": { word: "জগৎ", position: "end" }
+  };
+
+  function samplePrompts(letter) {
+    const sample = letterSamples[letter] || { word: "শব্দ", position: "middle" };
+    const prompt = sample.position === "start"
+      ? `‘${sample.word}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`
+      : sample.position === "end"
+        ? `‘${sample.word}’ শব্দের শেষের বর্ণ কোনটি?`
+        : `‘${sample.word}’ শব্দে কোন বর্ণটি আছে?`;
+    return question(prompt, letter, ["অ", "আ", "ই"].filter((item) => item !== letter), `‘${sample.word}’ শব্দে ‘${letter}’ বর্ণটি আছে।`, sample.word);
+  }
+
+  function groupLetterPractice(chapterInfo) {
+    const letters = chapterInfo.letters;
+    const sampleWords = letters.map((letter) => letterSamples[letter]?.word || "শব্দ");
+    const orderQuestions = [];
+    for (let index = 0; index < letters.length - 1; index += 1) {
+      orderQuestions.push(question(`‘${letters[index]}’ এর পরে কোন বর্ণ?`, letters[index + 1], ["অ", "আ", letters[0]].filter((item) => item !== letters[index + 1]), `বাংলা বর্ণমালার এই গোষ্ঠীতে ‘${letters[index]}’ এর পরে ‘${letters[index + 1]}’ আসে।`, letters[index]));
+    }
+    const wordChoiceQuestions = letters.map((letter, index) => {
+      const sample = letterSamples[letter] || { word: "শব্দ", position: "middle" };
+      const prompt = sample.position === "start"
+        ? `কোন শব্দটি ‘${letter}’ দিয়ে শুরু?`
+        : `কোন শব্দে ‘${letter}’ আছে?`;
+      return question(prompt, sample.word, sampleWords.filter((word) => word !== sample.word), `‘${sample.word}’ শব্দে ‘${letter}’ বর্ণটি আছে।`, letter);
+    });
+    const first = letters[0];
+    const last = letters[letters.length - 1];
+    return [
+      ...letters.map(samplePrompts),
+      ...wordChoiceQuestions,
+      ...orderQuestions,
+      question(`‘${first}’ কোন ধরনের বর্ণ?`, "ব্যঞ্জনবর্ণ", ["স্বরবর্ণ", "সংখ্যা", "কারচিহ্ন"], `‘${first}’ একটি ব্যঞ্জনবর্ণ।`, first),
+      question(`‘${last}’ কোন ধরনের বর্ণ?`, "ব্যঞ্জনবর্ণ", ["স্বরবর্ণ", "সংখ্যা", "চিহ্ন"], `‘${last}’ একটি ব্যঞ্জনবর্ণ।`, last),
+      question(`কোনটি ব্যঞ্জনবর্ণ?`, first, ["অ", "আ", "ই"], `‘${first}’ একটি ব্যঞ্জনবর্ণ।`, first),
+      question(`কোনটি স্বরবর্ণ?`, "অ", [first, last, letters[1] || first], "‘অ’ একটি স্বরবর্ণ; অন্যগুলো ব্যঞ্জনবর্ণ।", "অ"),
+      question(`‘${letters[0]}’ থেকে ‘${last}’ পর্যন্ত মোট কয়টি বর্ণ আছে?`, `${bn(letters.length)}টি`, ["২টি", "৩টি", "১০টি"], `${letters.join("، ")}—মোট ${bn(letters.length)}টি বর্ণ।`, bn(letters.length)),
+      question(`‘${last}’ এর আগের বর্ণ কোনটি?`, letters[letters.length - 2] || first, ["অ", "আ", first].filter((item) => item !== letters[letters.length - 2]), `‘${last}’ এর আগে ‘${letters[letters.length - 2] || first}’ আসে।`, last),
+      question("ব্যঞ্জনবর্ণের সঙ্গে স্বরবর্ণ যোগ হলে কী গঠন হয়?", "ধ্বনি ও শব্দ", ["শুধু সংখ্যা", "শুধু রং", "শুধু ছবি"], "ব্যঞ্জনবর্ণ ও স্বরবর্ণ মিলেই ধ্বনি ও শব্দ তৈরি হয়।", "অ"),
+      question(`‘${sampleWords[0]}’ শব্দটি কোন বর্ণ দিয়ে শুরু?`, letters[0], ["অ", "আ", letters[1] || "ক"].filter((item) => item !== letters[0]), `‘${sampleWords[0]}’ শব্দের প্রথম বর্ণ ‘${letters[0]}’।`, sampleWords[0]),
+      question(`‘${sampleWords[sampleWords.length - 1]}’ শব্দে কোন বর্ণটি খুঁজে পাবে?`, last, ["অ", "ই", "উ"], `‘${sampleWords[sampleWords.length - 1]}’ শব্দে ‘${last}’ বর্ণটি আছে।`, sampleWords[sampleWords.length - 1]),
+      question(`${letters.join("، ")}—এই ক্রমে শুরুতে কোন বর্ণ?`, letters[0], [last, letters[1] || last, "অ"], `এই ক্রমে শুরুতে ‘${letters[0]}’ আছে।`, letters[0]),
+      question(`${letters.join("، ")}—এই ক্রমে মাঝে কোন বর্ণ?`, letters[Math.floor(letters.length / 2)], [letters[0], last, "আ"].filter((item) => item !== letters[Math.floor(letters.length / 2)]), `এই ক্রমের মাঝের বর্ণ ‘${letters[Math.floor(letters.length / 2)]}’।`, letters[Math.floor(letters.length / 2)]),
+      question(`${letters.join("، ")}—এই ক্রমে শেষে কোন বর্ণ?`, last, [letters[0], letters[1] || letters[0], "ই"].filter((item) => item !== last), `এই ক্রমের শেষে ‘${last}’ আছে।`, last)
+    ].slice(0, 20);
+  }
+
+  function specialLetterPractice(chapterInfo) {
+    const letters = chapterInfo.letters;
+    const words = letters.map((letter) => letterSamples[letter]?.word || "শব্দ");
+    return [
+      ...letters.map(samplePrompts),
+      ...letters.map((letter, index) => question(`কোন শব্দে ‘${letter}’ বর্ণটি আছে?`, words[index], words.filter((word) => word !== words[index]), `‘${words[index]}’ শব্দে ‘${letter}’ বর্ণটি আছে।`, letter)),
+      question("‘ড়’ কোন শব্দে আছে?", "গাড়ি", ["কলম", "নদী", "আম"], "‘গাড়ি’ শব্দে ‘ড়’ আছে।", "ড়"),
+      question("‘ঢ়’ কোন শব্দে আছে?", "আষাঢ়", ["বই", "ঘর", "মাছ"], "‘আষাঢ়’ শব্দে ‘ঢ়’ আছে।", "ঢ়"),
+      question("‘য়’ কোন শব্দে আছে?", "হয়", ["আম", "কলম", "ঘর"], "‘হয়’ শব্দের শেষে ‘য়’ আছে।", "য়"),
+      question("‘ৎ’ কোন শব্দে আছে?", "জগৎ", ["নদী", "বই", "ফুল"], "‘জগৎ’ শব্দের শেষে ‘ৎ’ আছে।", "ৎ"),
+      question("‘গাড়ি’ শব্দে ‘ড়’ কোথায় আছে?", "মাঝে", ["শুরুতে", "শুধু শেষে", "কোথাও নেই"], "‘গাড়ি’ শব্দের মাঝখানে ‘ড়’ আছে।", "গাড়ি"),
+      question("‘জগৎ’ শব্দে ‘ৎ’ কোথায় আছে?", "শেষে", ["শুরুতে", "মাঝে", "কোথাও নেই"], "‘জগৎ’ শব্দের শেষে ‘ৎ’ আছে।", "জগৎ"),
+      question("বিশেষ বর্ণ চিনলে কী ঠিকভাবে পড়া যায়?", "শব্দ", ["শুধু রং", "শুধু সংখ্যা", "শুধু ছবি"], "বিশেষ বর্ণ চিনলে শব্দের বানান ও উচ্চারণ ঠিক হয়।", "📖"),
+      question("কোনটি বিশেষ বর্ণ?", "ড়", ["অ", "আ", "ই"], "‘ড়’ একটি বিশেষ বর্ণ।", "ড়"),
+      question("কোনটি স্বরবর্ণ?", "আ", ["ড়", "ঢ়", "ৎ"], "‘আ’ স্বরবর্ণ; অন্যগুলো বিশেষ বর্ণ।", "আ"),
+      question("‘হয়’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "হ", ["য়", "অ", "ই"], "‘হয়’ শব্দটি ‘হ’ দিয়ে শুরু।", "হ"),
+      question("‘আষাঢ়’ শব্দের শেষের বর্ণ কী?", "ঢ়", ["আ", "ষ", "ড়"], "‘আষাঢ়’ শব্দের শেষে ‘ঢ়’ আছে।", "ঢ়"),
+      question("‘গাড়ি’ ও ‘হয়’ শব্দ দুটি পড়তে কোন দক্ষতা দরকার?", "বিশেষ বর্ণ চেনা", ["শুধু সংখ্যা চেনা", "শুধু রং চেনা", "শুধু ছবি দেখা"], "শব্দ দুটিতে বিশেষ বর্ণ আছে, তাই সেগুলো চিনতে হয়।", "💡"),
+      question("কোন জোড়াটি সঠিক?", "ৎ — জগৎ", ["ৎ — আম", "ড় — ইলিশ", "য় — কলম"], "‘জগৎ’ শব্দের শেষে ‘ৎ’ আছে।", "ৎ"),
+      question("কোন জোড়াটি সঠিক?", "ড় — গাড়ি", ["ড় — আম", "ঢ় — বই", "য় — ঘর"], "‘গাড়ি’ শব্দে ‘ড়’ আছে।", "ড়")
+    ].slice(0, 20);
+  }
+
+  function specialSignPractice() {
+    return [
+      question("‘ং’ চিহ্নটির নাম কী?", "অনুস্বার", ["বিসর্গ", "দাঁড়ি", "চন্দ্রবিন্দু"], "‘ং’ চিহ্নের নাম অনুস্বার।", "ং"),
+      question("‘ঃ’ চিহ্নটির নাম কী?", "বিসর্গ", ["অনুস্বার", "দাঁড়ি", "আ-কার"], "‘ঃ’ চিহ্নের নাম বিসর্গ।", "ঃ"),
+      question("কোন শব্দে অনুস্বার আছে?", "বাংলা", ["কলম", "বই", "ঘর"], "‘বাংলা’ শব্দে ‘ং’ অনুস্বার আছে।", "বাংলা"),
+      question("কোন শব্দে বিসর্গ আছে?", "দুঃখ", ["আকাশ", "নদী", "বই"], "‘দুঃখ’ শব্দে ‘ঃ’ বিসর্গ আছে।", "দুঃখ"),
+      question("‘বাংলা’ শব্দে কোন চিহ্নটি আছে?", "ং", ["ঃ", "।", "?"], "‘বাংলা’ শব্দে ‘ং’ অনুস্বার আছে।", "ং"),
+      question("‘দুঃখ’ শব্দে কোন চিহ্নটি আছে?", "ঃ", ["ং", "।", "?"], "‘দুঃখ’ শব্দে ‘ঃ’ বিসর্গ আছে।", "ঃ"),
+      question("‘সংগীত’ শব্দে কোন চিহ্নটি আছে?", "ং", ["ঃ", "া", "ি"], "‘সংগীত’ শব্দে ‘ং’ অনুস্বার আছে।", "সংগীত"),
+      question("‘নিঃশব্দ’ শব্দে কোন চিহ্নটি আছে?", "ঃ", ["ং", "ু", "ে"], "‘নিঃশব্দ’ শব্দে ‘ঃ’ বিসর্গ আছে।", "নিঃশব্দ"),
+      question("অনুস্বার কোন চিহ্ন?", "ং", ["ঃ", "।", "?"], "‘ং’ হলো অনুস্বার।", "ং"),
+      question("বিসর্গ কোন চিহ্ন?", "ঃ", ["ং", "।", "!"], "‘ঃ’ হলো বিসর্গ।", "ঃ"),
+      question("‘বাংলা’ শব্দে অনুস্বার কোথায় আছে?", "মাঝে", ["শুরুতে", "শেষে", "কোথাও নেই"], "‘বাংলা’ শব্দের মাঝখানে ‘ং’ আছে।", "বাংলা"),
+      question("‘দুঃখ’ শব্দে বিসর্গ কোথায় আছে?", "মাঝে", ["শুরুতে", "শেষে", "কোথাও নেই"], "‘দুঃখ’ শব্দের মাঝখানে ‘ঃ’ আছে।", "দুঃখ"),
+      question("কোন জোড়াটি সঠিক?", "অনুস্বার — ং", ["অনুস্বার — ঃ", "বিসর্গ — ং", "দাঁড়ি — ং"], "অনুস্বারের চিহ্ন হলো ‘ং’।", "ং"),
+      question("কোন জোড়াটি সঠিক?", "বিসর্গ — ঃ", ["বিসর্গ — ং", "অনুস্বার — ঃ", "দাঁড়ি — ঃ"], "বিসর্গের চিহ্ন হলো ‘ঃ’।", "ঃ"),
+      question("বিশেষ চিহ্ন চিনলে কী ঠিক হয়?", "বানান ও উচ্চারণ", ["শুধু রং", "শুধু সংখ্যা", "শুধু ছবি"], "চিহ্ন চিনলে শব্দের বানান ও উচ্চারণ ঠিক হয়।", "📖"),
+      question("কোন শব্দে অনুস্বার নেই?", "কলম", ["বাংলা", "সংগীত", "রঙ"], "‘কলম’ শব্দে ‘ং’ নেই; অন্য শব্দগুলোতে অনুস্বার আছে।", "কলম"),
+      question("কোন শব্দে বিসর্গ নেই?", "নদী", ["দুঃখ", "নিঃশব্দ", "দুঃসাহস"], "‘নদী’ শব্দে ‘ঃ’ নেই; অন্য শব্দগুলোতে বিসর্গ আছে।", "নদী"),
+      question("‘রঙ’ শব্দের শেষে কোন চিহ্নটি আছে?", "ং", ["ঃ", "।", "?"], "‘রঙ’ শব্দের শেষে ‘ং’ আছে।", "রঙ"),
+      question("‘দুঃসাহস’ শব্দে কোন চিহ্নটি আছে?", "ঃ", ["ং", "া", "ি"], "‘দুঃসাহস’ শব্দে ‘ঃ’ বিসর্গ আছে।", "দুঃসাহস"),
+      question("‘ং’ ও ‘ঃ’ কী?", "বাংলা ভাষার বিশেষ চিহ্ন", ["সংখ্যা", "রং", "ফল"], "‘ং’ ও ‘ঃ’ বাংলা শব্দে ব্যবহৃত বিশেষ চিহ্ন।", "অ")
+    ];
+  }
+
+  function consonantPractice() {
+    return [
+      question("কোনটি ব্যঞ্জনবর্ণ?", "ক", ["অ", "আ", "ই"], "‘ক’ একটি ব্যঞ্জনবর্ণ।", "ক"),
+      question("কোনটি ব্যঞ্জনবর্ণ?", "ম", ["উ", "এ", "ঔ"], "‘ম’ একটি ব্যঞ্জনবর্ণ।", "ম"),
+      question("কোনটি স্বরবর্ণ?", "আ", ["খ", "গ", "ঘ"], "‘আ’ একটি স্বরবর্ণ।", "আ"),
+      question("ক এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "খ", ["গ", "চ", "অ"], "বাংলা বর্ণমালায় ‘ক’ এর পরে ‘খ’ আসে।", "ক"),
+      question("গ এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "ঘ", ["ঙ", "ক", "আ"], "বাংলা বর্ণমালায় ‘গ’ এর পরে ‘ঘ’ আসে।", "গ"),
+      question("চ এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "ছ", ["জ", "ক", "অ"], "বাংলা বর্ণমালায় ‘চ’ এর পরে ‘ছ’ আসে।", "চ"),
+      question("ট এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "ঠ", ["ড", "ত", "আ"], "বাংলা বর্ণমালায় ‘ট’ এর পরে ‘ঠ’ আসে।", "ট"),
+      question("ত এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "থ", ["দ", "প", "ই"], "বাংলা বর্ণমালায় ‘ত’ এর পরে ‘থ’ আসে।", "ত"),
+      question("প এর পরে কোন ব্যঞ্জনবর্ণ আসে?", "ফ", ["ব", "ম", "উ"], "বাংলা বর্ণমালায় ‘প’ এর পরে ‘ফ’ আসে।", "প"),
+      question("কোন শব্দটি ‘ক’ দিয়ে শুরু?", "কলা", ["আম", "ইলিশ", "উট"], "‘কলা’ শব্দটি ‘ক’ দিয়ে শুরু।", "কলা"),
+      question("কোন শব্দটি ‘খ’ দিয়ে শুরু?", "খাতা", ["বই", "কলম", "মাছ"], "‘খাতা’ শব্দটি ‘খ’ দিয়ে শুরু।", "খাতা"),
+      question("কোন শব্দটি ‘গ’ দিয়ে শুরু?", "গাছ", ["ঘর", "নদী", "রথ"], "‘গাছ’ শব্দটি ‘গ’ দিয়ে শুরু।", "গাছ"),
+      question("কোন শব্দটি ‘ম’ দিয়ে শুরু?", "মাছ", ["বই", "ফুল", "নদী"], "‘মাছ’ শব্দটি ‘ম’ দিয়ে শুরু।", "মাছ"),
+      question("‘ঘর’ শব্দের প্রথম বর্ণ কী?", "ঘ", ["গ", "র", "অ"], "‘ঘর’ শব্দটির প্রথম বর্ণ ‘ঘ’।", "ঘর"),
+      question("‘নদী’ শব্দের প্রথম বর্ণ কী?", "ন", ["দ", "ী", "অ"], "‘নদী’ শব্দটির প্রথম বর্ণ ‘ন’।", "নদী"),
+      question("ব্যঞ্জনবর্ণের সঙ্গে কী যোগ হলে শব্দ উচ্চারণ সহজ হয়?", "স্বরবর্ণ", ["সংখ্যা", "রং", "ছবি"], "ব্যঞ্জনবর্ণের সঙ্গে স্বরবর্ণ যোগ হলে ধ্বনি তৈরি হয়।", "অ"),
+      question("কোন জোড়াটি শুধু ব্যঞ্জনবর্ণের?", "ক, খ", ["অ, আ", "ই, উ", "এ, ও"], "‘ক’ ও ‘খ’ দুটিই ব্যঞ্জনবর্ণ।", "ক"),
+      question("কোন জোড়াটিতে একটি স্বরবর্ণ ও একটি ব্যঞ্জনবর্ণ আছে?", "ই, ম", ["অ, আ", "ক, খ", "ত, থ"], "‘ই’ স্বরবর্ণ এবং ‘ম’ ব্যঞ্জনবর্ণ।", "ই"),
+      question("‘ফুল’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "ফ", ["ল", "উ", "ক"], "‘ফুল’ শব্দটির প্রথম বর্ণ ‘ফ’।", "ফুল"),
+      question("‘হাতি’ শব্দটি কোন বর্ণ দিয়ে শুরু?", "হ", ["ত", "আ", "ই"], "‘হাতি’ শব্দটির প্রথম বর্ণ ‘হ’।", "হাতি")
+    ];
+  }
+
+  function meaningfulQuestions(chapterInfo) {
+    const specialFactories = {
+      "vowel-pair": () => vowelPairPractice(chapterInfo),
+      vowels: allVowelPractice,
+      kar: () => karPractice(chapterInfo),
+      "consonant-group": () => groupLetterPractice(chapterInfo),
+      "special-letters": () => specialLetterPractice(chapterInfo),
+      "special-signs": specialSignPractice,
+      consonants: consonantPractice
+    };
+    if (specialFactories[chapterInfo.type]) return specialFactories[chapterInfo.type]();
+    const conceptQuestions = extraQuestions(chapterInfo.type, chapterInfo);
+    const wordQuestions = vocabularyQuestions(vocabularyByType[chapterInfo.type] || vocabularyByType.words);
+    return [...conceptQuestions, ...wordQuestions].slice(0, 20);
+  }
+
   function makeChapterQuestions(chapterInfo) {
-    const questions = [...commonQuestions(chapterInfo), ...extraQuestions(chapterInfo.type, chapterInfo)];
-    return questions.slice(0, 20);
+    // Every item tests a lesson concept, vocabulary word, reading skill, or language pattern.
+    // We intentionally avoid chapter-title, serial-number, and generic study-habit filler questions.
+    return meaningfulQuestions(chapterInfo).slice(0, 20);
   }
 
   function getChapter(id) {

@@ -774,9 +774,9 @@ function renderChapterDetail() {
         <article class="chapter-learn-card">
           <h2>এই পাঠে অনুশীলন হবে</h2>
           <ul>
-            <li><span aria-hidden="true">✓</span> পাঠের নাম ও মূল বিষয় মনে রাখা</li>
-            <li><span aria-hidden="true">✓</span> বর্ণ, শব্দ ও সহজ অর্থ বোঝা</li>
-            <li><span aria-hidden="true">✓</span> প্রতিটি উত্তরের কারণ জানা</li>
+            <li><span aria-hidden="true">✓</span> পাঠের মূল বিষয় ও গুরুত্বপূর্ণ শব্দ বোঝা</li>
+            <li><span aria-hidden="true">✓</span> বর্ণ, শব্দ ও বাক্যের ব্যবহার শেখা</li>
+            <li><span aria-hidden="true">✓</span> প্রতিটি সঠিক উত্তরের কারণ জানা</li>
           </ul>
           <div class="explanation-chip"><span aria-hidden="true">💡</span> ব্যাখ্যা পড়লে উত্তরটি মনে রাখা সহজ হয়।</div>
         </article>
