@@ -114,7 +114,7 @@ const subjects = {
     className: "subject-english",
     icon: "A B",
     iconClass: "english",
-    homeDescription: "Letters, words & fun",
+    homeDescription: "২০০টি দরকারি প্রশ্ন",
     heading: "English is fun!",
     intro: "খেলতে খেলতে শিখে নাও English letters আর everyday words। তুমি খুব ভালো পারবে!",
     tip: "শব্দটি জোরে জোরে একবার পড়ো। শুনলে ও মনে রাখলে উত্তর দেওয়া আরও সহজ হবে।",
@@ -446,9 +446,11 @@ const state = {
   subjectKey: null,
   quizId: null,
   topicId: null,
+  englishTopicId: null,
   quizOrigin: "standard",
   generatedQuiz: null,
   usedFullBookQuestionIds: [],
+  usedEnglishFullBookQuestionIds: [],
   questionIndex: 0,
   answers: [],
   awardedStars: 0
@@ -492,6 +494,10 @@ function getQuiz() {
 
 function getBanglaTopic() {
   return state.topicId ? BanglaBook.getTopic(state.topicId) : null;
+}
+
+function getEnglishTopic() {
+  return state.englishTopicId ? EnglishBook.getTopic(state.englishTopicId) : null;
 }
 
 function isAnswered() {
@@ -596,7 +602,11 @@ function renderHome() {
 }
 
 function renderSubjectCard(subject, index) {
-  const itemCount = subject.id === "bangla" ? "বই + ৮টি বিষয়" : "৩টি কুইজ";
+  const itemCount = subject.id === "bangla"
+    ? "বই + ৮টি বিষয়"
+    : subject.id === "english"
+      ? "১০টি বিষয় • ২০০ প্রশ্ন"
+      : "৩টি কুইজ";
   return `
     <button class="subject-card ${subject.className}" type="button" data-action="open-subject" data-subject="${subject.id}" aria-label="${subject.name} বিষয়ের কুইজগুলো দেখো">
       <span class="subject-card-inner">
@@ -741,6 +751,93 @@ function renderTopicCard(topic) {
   `;
 }
 
+function renderEnglishOptions() {
+  const subject = subjects.english;
+  const topicCount = EnglishBook.topics.length;
+  const totalQuestions = EnglishBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+
+  return `
+    <section class="bangla-book-page english-book-page ${subject.className}" aria-labelledby="english-book-title">
+      <button class="back-button" type="button" data-action="home"><span class="back-arrow" aria-hidden="true">←</span>সব বিষয়</button>
+      <div class="book-hub-hero">
+        <div>
+          <p class="subject-kicker">English for Today <span aria-hidden="true">•</span> Class Two</p>
+          <h1 id="english-book-title">English is fun!</h1>
+          <p>বইয়ের দরকারি ভাষা, শব্দ ও গল্প থেকে অনুশীলন করো। প্রতিটি উত্তরের সঙ্গে সহজ ব্যাখ্যাও দেখবে।</p>
+          <div class="subject-meta-row">
+            <span class="pill">✦ ${bnNumber(topicCount)}টি বিষয়</span>
+            <span class="pill">◷ ${bnNumber(totalQuestions)}টি essential question</span>
+            <span class="pill">💡 ব্যাখ্যাসহ</span>
+          </div>
+        </div>
+        <div class="book-hub-art english-book-art" aria-hidden="true"><span>A B</span><i>✦</i><b>English</b></div>
+      </div>
+
+      <div class="book-choice-heading">
+        <div><h2>How would you like to practise?</h2><p>Choose a random full-book quiz or a learning topic.</p></div>
+        <span class="quiz-count-note">${bnNumber(totalQuestions)}টি বাছাই করা প্রশ্ন</span>
+      </div>
+      <div class="book-choice-grid">
+        <button class="book-choice-card full-book-choice" type="button" data-action="start-english-full-book" aria-label="Start 10 random questions from the full English book">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">📚</span><span class="choice-label">Full book</span></span>
+          <span class="choice-title">Random Quiz</span>
+          <span class="choice-description">সব English topic থেকে এলোমেলো ১০টি প্রশ্ন। Play Again চাপলে নতুন প্রশ্ন পাবে।</span>
+          <span class="choice-footer"><span>10 random questions</span><strong>Start <i aria-hidden="true">→</i></strong></span>
+        </button>
+        <button class="book-choice-card chapter-book-choice" type="button" data-action="open-english-topic-list" aria-label="View English topics">
+          <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🧩</span><span class="choice-label">Topic-wise</span></span>
+          <span class="choice-title">Choose a Topic</span>
+          <span class="choice-description">Greetings, numbers, colours, family, animals, stories এবং আরও দরকারি বিষয় বেছে নাও।</span>
+          <span class="choice-footer"><span>${bnNumber(topicCount)}টি বিষয়</span><strong>Choose <i aria-hidden="true">→</i></strong></span>
+        </button>
+      </div>
+
+      <aside class="book-note"><span aria-hidden="true">🌟</span><p><strong>Small steps, big learning:</strong> ভুল হলে ব্যাখ্যাটি পড়ো, তারপর আবার চেষ্টা করো।</p></aside>
+    </section>
+  `;
+}
+
+function renderEnglishTopicList() {
+  const subject = subjects.english;
+  const totalQuestions = EnglishBook.topics.reduce((total, topic) => total + topic.questions.length, 0);
+  return `
+    <section class="chapter-list-page english-topic-list ${subject.className}" aria-labelledby="english-topic-list-title">
+      <button class="back-button" type="button" data-action="english-options"><span class="back-arrow" aria-hidden="true">←</span>English book</button>
+      <div class="chapter-list-hero">
+        <div>
+          <p class="subject-kicker">English for Today <span aria-hidden="true">•</span> Topic-wise practice</p>
+          <h1 id="english-topic-list-title">Choose a Topic</h1>
+          <p>প্রতিটি বিষয়ে বই থেকে বাছাই করা প্রয়োজনীয় প্রশ্ন আছে—greetings থেকে story time পর্যন্ত।</p>
+        </div>
+        <div class="chapter-stat-stack" aria-label="English quiz information">
+          <span><b>${bnNumber(EnglishBook.topics.length)}</b>টি বিষয়</span>
+          <span><b>${bnNumber(totalQuestions)}</b>টি প্রশ্ন</span>
+          <span><b>💡</b> ব্যাখ্যাসহ</span>
+        </div>
+      </div>
+
+      <section class="topic-section" aria-label="English learning topics">
+        <div class="chapter-group-heading">
+          <span class="group-icon" aria-hidden="true">A B</span>
+          <div><h2>What will you learn?</h2><p>Choose one topic to start its essential questions.</p></div>
+        </div>
+        <div class="chapter-card-grid">${EnglishBook.topics.map(renderEnglishTopicCard).join("")}</div>
+      </section>
+    </section>
+  `;
+}
+
+function renderEnglishTopicCard(topic) {
+  const completed = profile.completed.includes(`english:english-topic-${topic.id}`);
+  return `
+    <button class="chapter-card" type="button" data-action="start-english-topic-quiz" data-english-topic="${topic.id}" aria-label="Start ${topic.questions.length} questions about ${topic.title}">
+      <span class="chapter-card-icon english-topic-icon" aria-hidden="true">${topic.icon}</span>
+      <span class="chapter-card-copy"><span class="chapter-number">English for Today</span><strong>${topic.title}</strong><small>${bnNumber(topic.questions.length)}টি essential question <span aria-hidden="true">•</span> explanation ${completed ? "• ✓ শেষ" : ""}</small></span>
+      <span class="chapter-arrow" aria-hidden="true">→</span>
+    </button>
+  `;
+}
+
 function renderQuizCard(subject, quiz, index) {
   const completed = profile.completed.includes(`${subject.id}:${quiz.id}`);
   return `
@@ -829,7 +926,7 @@ function renderComplete() {
   const quiz = getQuiz();
   const score = quizScore();
   const allCorrect = score === quiz.questions.length;
-  const isFullBookQuiz = state.quizOrigin === "full-book";
+  const isFullBookQuiz = state.quizOrigin === "full-book" || state.quizOrigin === "english-full-book";
   const title = allCorrect ? "অসাধারণ!" : score >= 2 ? "দারুণ চেষ্টা!" : "তুমি পারবে!";
   const description = isFullBookQuiz
     ? allCorrect
@@ -874,6 +971,12 @@ function render() {
   } else if (state.screen === "bangla-options") {
     app.innerHTML = renderBanglaOptions();
     document.title = "বাংলা বই | ঝিলমিল কুইজ";
+  } else if (state.screen === "english-options") {
+    app.innerHTML = renderEnglishOptions();
+    document.title = "English for Today | ঝিলমিল কুইজ";
+  } else if (state.screen === "english-topic-list") {
+    app.innerHTML = renderEnglishTopicList();
+    document.title = "English topics | ঝিলমিল কুইজ";
   } else if (state.screen === "topic-list") {
     app.innerHTML = renderTopicList();
     document.title = "বাংলা বিষয়ের তালিকা | ঝিলমিল কুইজ";
@@ -891,6 +994,7 @@ function goHome() {
   state.subjectKey = null;
   state.quizId = null;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
@@ -903,10 +1007,15 @@ function openSubject(subjectKey) {
     openBanglaOptions();
     return;
   }
+  if (subjectKey === "english") {
+    openEnglishOptions();
+    return;
+  }
   state.screen = "subject";
   state.subjectKey = subjectKey;
   state.quizId = null;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.answers = [];
@@ -919,7 +1028,34 @@ function openBanglaOptions() {
   state.subjectKey = "bangla";
   state.quizId = null;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "bangla-options";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openEnglishOptions() {
+  state.screen = "english-options";
+  state.subjectKey = "english";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.quizOrigin = "english-options";
+  state.generatedQuiz = null;
+  state.answers = [];
+  render();
+  moveToTop();
+}
+
+function openEnglishTopicList() {
+  state.screen = "english-topic-list";
+  state.subjectKey = "english";
+  state.quizId = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.quizOrigin = "english-topic";
   state.generatedQuiz = null;
   state.answers = [];
   render();
@@ -931,6 +1067,7 @@ function openTopicList() {
   state.subjectKey = "bangla";
   state.quizId = null;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "topic";
   state.generatedQuiz = null;
   state.answers = [];
@@ -943,6 +1080,7 @@ function startQuiz(subjectKey, quizId) {
   state.subjectKey = subjectKey;
   state.quizId = quizId;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "standard";
   state.generatedQuiz = null;
   state.questionIndex = 0;
@@ -959,7 +1097,46 @@ function startTopicQuiz(topicId) {
   state.subjectKey = "bangla";
   state.quizId = quiz.id;
   state.topicId = topicId;
+  state.englishTopicId = null;
   state.quizOrigin = "topic";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
+function startEnglishTopicQuiz(topicId) {
+  const quiz = EnglishBook.makeTopicQuiz(topicId);
+  if (!quiz) return;
+  state.screen = "quiz";
+  state.subjectKey = "english";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = topicId;
+  state.quizOrigin = "english-topic";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
+  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
+function startEnglishFullBookQuiz() {
+  let quiz = EnglishBook.makeFullBookQuiz(state.usedEnglishFullBookQuestionIds);
+  if (quiz.availableQuestionCount < 10) {
+    state.usedEnglishFullBookQuestionIds = [];
+    quiz = EnglishBook.makeFullBookQuiz();
+  }
+  state.usedEnglishFullBookQuestionIds = [...state.usedEnglishFullBookQuestionIds, ...quiz.questionIds];
+  state.screen = "quiz";
+  state.subjectKey = "english";
+  state.quizId = quiz.id;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.quizOrigin = "english-full-book";
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
@@ -980,6 +1157,7 @@ function startFullBookQuiz() {
   state.subjectKey = "bangla";
   state.quizId = quiz.id;
   state.topicId = null;
+  state.englishTopicId = null;
   state.quizOrigin = "full-book";
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
@@ -992,8 +1170,12 @@ function startFullBookQuiz() {
 function returnFromQuiz() {
   if (state.quizOrigin === "topic") {
     openTopicList();
+  } else if (state.quizOrigin === "english-topic") {
+    openEnglishTopicList();
   } else if (state.quizOrigin === "full-book") {
     openBanglaOptions();
+  } else if (state.quizOrigin === "english-full-book") {
+    openEnglishOptions();
   } else {
     openSubject(state.subjectKey);
   }
@@ -1035,11 +1217,19 @@ function handleAction(actionTarget) {
 
   if (action === "bangla-options") openBanglaOptions();
 
+  if (action === "english-options") openEnglishOptions();
+
   if (action === "open-topic-list") openTopicList();
+
+  if (action === "open-english-topic-list") openEnglishTopicList();
 
   if (action === "start-topic-quiz") startTopicQuiz(actionTarget.dataset.topic);
 
+  if (action === "start-english-topic-quiz") startEnglishTopicQuiz(actionTarget.dataset.englishTopic);
+
   if (action === "start-full-book") startFullBookQuiz();
+
+  if (action === "start-english-full-book") startEnglishFullBookQuiz();
 
   if (action === "return-subject" || action === "quit-quiz") returnFromQuiz();
 
@@ -1061,7 +1251,9 @@ function handleAction(actionTarget) {
 
   if (action === "replay") {
     if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
+    else if (state.quizOrigin === "english-topic") startEnglishTopicQuiz(state.englishTopicId);
     else if (state.quizOrigin === "full-book") startFullBookQuiz();
+    else if (state.quizOrigin === "english-full-book") startEnglishFullBookQuiz();
     else startQuiz(state.subjectKey, state.quizId);
   }
 }

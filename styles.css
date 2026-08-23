@@ -3317,3 +3317,33 @@ main {
     padding-top: 5px;
   }
 }
+
+/* English for Today topic practice */
+.english-book-page .book-hub-hero {
+  background: linear-gradient(115deg, #eeeaff, #f8f3ff);
+}
+
+.english-book-page .book-hub-art {
+  background: var(--subject-main);
+}
+
+.english-book-art > span {
+  font-family: Arial, sans-serif;
+  font-size: 43px;
+  letter-spacing: -5px;
+}
+
+.english-topic-list .chapter-list-hero {
+  background: #f0edff;
+}
+
+.english-topic-icon {
+  font-family: Arial, sans-serif !important;
+}
+
+@media (max-width: 760px) {
+  .english-book-art > span {
+    font-size: 29px;
+    letter-spacing: -3px;
+  }
+}
