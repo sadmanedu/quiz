@@ -437,6 +437,14 @@ const subjects = {
   }
 };
 
+const mixedSubject = {
+  id: "all-subjects",
+  name: "সব বিষয়",
+  className: "subject-gk",
+  icon: "✦",
+  iconClass: "gk"
+};
+
 const app = document.getElementById("app");
 const topActions = document.getElementById("top-actions");
 const STORAGE_KEY = "jhilmil-quiz-progress-v1";
@@ -455,9 +463,9 @@ const state = {
   usedEnglishFullBookQuestionIds: [],
   usedMathFullBookQuestionIds: [],
   usedGkFullBookQuestionIds: [],
+  usedAllSubjectsQuestionIds: [],
   questionIndex: 0,
-  answers: [],
-  awardedStars: 0
+  answers: []
 };
 
 let profile = loadProfile();
@@ -465,13 +473,13 @@ let profile = loadProfile();
 function loadProfile() {
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (stored && typeof stored.stars === "number" && Array.isArray(stored.completed)) {
-      return stored;
+    if (stored && Array.isArray(stored.completed)) {
+      return { completed: stored.completed };
     }
   } catch (error) {
     // A quiz should still work when storage is unavailable.
   }
-  return { stars: 0, completed: [] };
+  return { completed: [] };
 }
 
 function saveProfile() {
@@ -487,6 +495,7 @@ function bnNumber(number) {
 }
 
 function getSubject() {
+  if (state.quizOrigin === "all-subjects") return mixedSubject;
   return subjects[state.subjectKey];
 }
 
@@ -494,6 +503,52 @@ function getQuiz() {
   if (state.generatedQuiz) return state.generatedQuiz;
   const subject = getSubject();
   return subject?.quizzes.find((quiz) => quiz.id === state.quizId);
+}
+
+function shuffleItems(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function makeAllSubjectsRandomQuiz(excludedQuestionIds = []) {
+  const excluded = new Set(excludedQuestionIds);
+  const sources = [
+    { id: "bangla", label: "বাংলা", book: BanglaBook },
+    { id: "english", label: "English", book: EnglishBook },
+    { id: "math", label: "গণিত", book: MathBook },
+    { id: "gk", label: "সাধারণ জ্ঞান", book: GkBook }
+  ];
+  const sourcePools = sources.map((source) => ({
+    ...source,
+    questions: source.book.topics.flatMap((topic) => topic.questions.map((item, questionIndex) => ({
+      ...item,
+      id: `${source.id}-${topic.id}-question-${questionIndex + 1}`,
+      sourceSubject: source.label
+    })))
+  }));
+  const availablePools = sourcePools.map((source) => ({
+    ...source,
+    questions: source.questions.filter((item) => !excluded.has(item.id))
+  }));
+  const canCoverAllSubjects = availablePools.every((source) => source.questions.length >= 2);
+  const selectedPools = canCoverAllSubjects ? availablePools : sourcePools;
+  const requiredQuestions = selectedPools.flatMap((source) => shuffleItems(source.questions).slice(0, 2));
+  const selectedIds = new Set(requiredQuestions.map((item) => item.id));
+  const remainingQuestions = selectedPools.flatMap((source) => source.questions).filter((item) => !selectedIds.has(item.id));
+  const questions = shuffleItems([...requiredQuestions, ...shuffleItems(remainingQuestions).slice(0, 2)]);
+  return {
+    id: "all-subjects-random",
+    title: "সব বিষয়ের র‌্যান্ডম কুইজ",
+    description: "বাংলা, English, গণিত ও সাধারণ জ্ঞান থেকে ১০টি প্রশ্ন",
+    availableQuestionCount: availablePools.reduce((total, source) => total + source.questions.length, 0),
+    canCoverAllSubjects,
+    questionIds: questions.map((item) => item.id),
+    questions
+  };
 }
 
 function getBanglaTopic() {
@@ -541,24 +596,19 @@ function updateHeader() {
   topActions.innerHTML = `
     <span class="header-greeting">হ্যালো, রিমি! <span aria-hidden="true">🌤️</span></span>
     <button class="top-link" type="button" data-action="home">হোম</button>
-    <span class="star-counter" aria-label="তোমার সংগ্রহে ${bnNumber(profile.stars)} তারা"><i aria-hidden="true">★</i><span>${bnNumber(profile.stars)} তারা</span></span>
     <span class="avatar" aria-label="রিমির প্রোফাইল">🧒</span>
   `;
 }
 
 function renderHome() {
-  const goalDone = Math.min(profile.completed.length, 3);
-  const goalWidth = `${(goalDone / 3) * 100}%`;
-
   return `
     <section class="home-hero" aria-labelledby="home-title">
       <div class="hero-copy">
         <p class="eyebrow">দ্বিতীয় শ্রেণি <span aria-hidden="true">•</span> বাংলাদেশ</p>
         <h1 id="home-title">খেলা খেলায়<br />শিখি <span>প্রতিদিন!</span></h1>
-        <p>রঙিন প্রশ্নের সঙ্গে আজকের পড়া ঝালিয়ে নাও। উত্তর দাও, তারা জিতো, আর হাসতে হাসতে শিখো।</p>
+        <p>বাংলা, English, গণিত ও সাধারণ জ্ঞান থেকে বাছাই করা ১০টি প্রশ্নে আজ নিজেকে যাচাই করো।</p>
         <div class="button-row">
-          <button class="primary-button" type="button" data-action="daily-challenge">আজকের চ্যালেঞ্জ <span aria-hidden="true">→</span></button>
-          <button class="secondary-button" type="button" data-action="scroll-subjects">বিষয়গুলো দেখো <span aria-hidden="true">↓</span></button>
+          <button class="primary-button" type="button" data-action="start-all-subjects-quiz">র‌্যান্ডম ১০ প্রশ্ন খেলি <span aria-hidden="true">→</span></button>
         </div>
       </div>
       <div class="hero-scene" aria-hidden="true">
@@ -573,40 +623,16 @@ function renderHome() {
       </div>
     </section>
 
-    <section class="daily-strip" aria-label="আজকের ছোট লক্ষ্য">
-      <div class="daily-icon" aria-hidden="true">⚡</div>
-      <p><strong>আজকের ছোট লক্ষ্য:</strong> একটি কুইজ শেষ করো, নতুন কিছু শেখো!</p>
-      <button class="text-button" type="button" data-action="daily-challenge">শুরু করি <span aria-hidden="true">→</span></button>
-    </section>
-
     <section id="subjects" aria-labelledby="subjects-title">
       <div class="section-heading">
         <div>
           <h2 id="subjects-title">তোমার বিষয়গুলো</h2>
         </div>
-        <p>যে বিষয়টি পড়তে ইচ্ছে করছে, সেটিতে চাপ দাও। প্রতিটিতে আছে ছোট ছোট মজার কুইজ!</p>
+        <p>যে বিষয়টি পড়তে ইচ্ছে করছে, সেটিতে চাপ দাও। প্রতিটিতে আছে প্রয়োজনীয় প্রশ্ন ও সহজ ব্যাখ্যা।</p>
       </div>
       <div class="subject-grid">
         ${Object.values(subjects).map(renderSubjectCard).join("")}
       </div>
-    </section>
-
-    <section class="home-bottom-grid" aria-label="তোমার শেখার অগ্রগতি">
-      <article class="goal-card">
-        <div class="goal-badge" aria-hidden="true">★</div>
-        <div>
-          <h3>আজকের তারার ঝুলি</h3>
-          <p>একটি কুইজ শেষ করলে নতুন তারা পাবে। চলো, আজ ৩টি কুইজ চেষ্টা করি!</p>
-          <div class="goal-progress">
-            <div class="goal-progress-track" aria-label="আজকের লক্ষ্য: ৩টির মধ্যে ${goalDone}টি কুইজ সম্পন্ন"><span style="width: ${goalWidth}"></span></div>
-            <em>${bnNumber(goalDone)}/৩ কুইজ</em>
-          </div>
-        </div>
-      </article>
-      <article class="parent-card">
-        <h3>শিখি নিজের গতিতে</h3>
-        <p>ভুল হলে মন খারাপ নয়—আবার চেষ্টা করলেই শেখা আরও সহজ হয়।</p>
-      </article>
     </section>
 
     <footer class="site-footer">ঝিলমিল কুইজ <span aria-hidden="true">•</span> আনন্দে শেখার ছোট্ট জায়গা</footer>
@@ -654,7 +680,7 @@ function renderSubject() {
           <div class="subject-meta-row">
             <span class="pill">✦ ৩টি কুইজ</span>
             <span class="pill">◷ ${bnNumber(totalQuestions)}টি প্রশ্ন</span>
-            <span class="pill">★ প্রতিটি উত্তরে তারা</span>
+            <span class="pill">✓ উত্তর দিয়ে শেখো</span>
           </div>
         </div>
         <div class="subject-hero-visual" aria-hidden="true">
@@ -1051,6 +1077,7 @@ function renderQuiz() {
   const subject = getSubject();
   const quiz = getQuiz();
   const question = quiz.questions[state.questionIndex];
+  const questionHint = question.sourceSubject ? `${question.sourceSubject} থেকে একটি প্রশ্ন` : "ভালো করে ভেবে উত্তর দাও";
   const answered = isAnswered();
   const selected = state.answers[state.questionIndex];
   const progress = ((state.questionIndex + 1) / quiz.questions.length) * 100;
@@ -1075,7 +1102,7 @@ function renderQuiz() {
       <article class="question-card ${subject.className}">
         <div class="question-card-head">
           <span class="question-symbol ${subject.iconClass}" aria-hidden="true">${question.visual || subject.icon}</span>
-          <div><p class="quiz-kicker">ভালো করে ভেবে উত্তর দাও</p><span class="pill pill-light">১টি সঠিক উত্তর</span></div>
+          <div><p class="quiz-kicker">${questionHint}</p><span class="pill pill-light">১টি সঠিক উত্তর</span></div>
         </div>
         <h1 id="question-title">${question.prompt}</h1>
         <div class="answer-grid" role="group" aria-label="উত্তর বেছে নাও">
@@ -1100,7 +1127,7 @@ function renderFeedback(question, selected, isLast) {
   const correct = selected === question.answer;
   const title = correct ? "দারুণ! একদম ঠিক উত্তর।" : "চেষ্টা সুন্দর হয়েছে!";
   const answerNote = correct
-    ? "তোমার ঝুলিতে একটি তারা যোগ হলো।"
+    ? "দারুণ! এবার পরের প্রশ্নে যাও।"
     : `সঠিক উত্তর: ${question.options[question.answer]}`;
   const explanation = question.explanation || "উত্তরটি আবার একবার দেখে মনে রাখো।";
   return `
@@ -1119,15 +1146,15 @@ function renderComplete() {
   const quiz = getQuiz();
   const score = quizScore();
   const allCorrect = score === quiz.questions.length;
-  const isFullBookQuiz = ["full-book", "english-full-book", "math-full-book", "gk-full-book"].includes(state.quizOrigin);
+  const isFullBookQuiz = ["all-subjects", "full-book", "english-full-book", "math-full-book", "gk-full-book"].includes(state.quizOrigin);
   const title = allCorrect ? "অসাধারণ!" : score >= 2 ? "দারুণ চেষ্টা!" : "তুমি পারবে!";
   const description = isFullBookQuiz
     ? allCorrect
-      ? "সব ১০টি র‌্যান্ডম প্রশ্নের উত্তরই ঠিক হয়েছে। তুমি সত্যিই বইয়ের তারকা!"
+      ? "সব ১০টি র‌্যান্ডম প্রশ্নের উত্তরই ঠিক হয়েছে। অসাধারণ কাজ!"
       : "তুমি ১০টি র‌্যান্ডম প্রশ্ন শেষ করেছো। নিচের Play Again চাপলে একদম নতুন ১০টি প্রশ্ন পাবে।"
     : allCorrect
-      ? "সবগুলো উত্তরই ঠিক হয়েছে। তুমি সত্যিই এই কুইজের তারকা!"
-      : "তুমি কুইজটি শেষ করেছো—এটাই খুব ভালো কথা। আবার খেললে আরও বেশি তারা পাবে!";
+      ? "সবগুলো উত্তরই ঠিক হয়েছে। অসাধারণ কাজ!"
+      : "তুমি কুইজটি শেষ করেছো—এটাই খুব ভালো কথা। আবার খেললে আরও ভালো হবে!";
   const replayLabel = isFullBookQuiz ? "Play Again" : "আবার খেলি";
 
   return `
@@ -1142,7 +1169,7 @@ function renderComplete() {
         <p>${description}</p>
         <div class="score-box" aria-label="কুইজের ফলাফল">
           <div class="score-stat"><strong>${bnNumber(score)}/${bnNumber(quiz.questions.length)}</strong><span>সঠিক উত্তর</span></div>
-          <div class="score-stat"><strong>★ ${bnNumber(state.awardedStars)}</strong><span>নতুন তারা</span></div>
+          <div class="score-stat"><strong>${bnNumber(quiz.questions.length)}</strong><span>মোট প্রশ্ন</span></div>
         </div>
         <div class="complete-actions">
           <button class="return-button" type="button" data-action="replay">${replayLabel} <span aria-hidden="true">↻</span></button>
@@ -1356,7 +1383,6 @@ function startQuiz(subjectKey, quizId) {
   state.generatedQuiz = null;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1373,7 +1399,6 @@ function startTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1390,7 +1415,6 @@ function startEnglishTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1411,7 +1435,6 @@ function startEnglishFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1429,7 +1452,6 @@ function startMathTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1451,7 +1473,6 @@ function startMathFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1470,7 +1491,6 @@ function startGkTopicQuiz(topicId) {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
@@ -1493,7 +1513,28 @@ function startGkFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
+  render();
+  moveToTop();
+}
+
+function startAllSubjectsQuiz() {
+  let quiz = makeAllSubjectsRandomQuiz(state.usedAllSubjectsQuestionIds);
+  if (quiz.availableQuestionCount < 10 || !quiz.canCoverAllSubjects) {
+    state.usedAllSubjectsQuestionIds = [];
+    quiz = makeAllSubjectsRandomQuiz();
+  }
+  state.usedAllSubjectsQuestionIds = [...state.usedAllSubjectsQuestionIds, ...quiz.questionIds];
+  state.screen = "quiz";
+  state.subjectKey = null;
+  state.topicId = null;
+  state.englishTopicId = null;
+  state.mathTopicId = null;
+  state.gkTopicId = null;
+  state.quizId = quiz.id;
+  state.quizOrigin = "all-subjects";
+  state.generatedQuiz = quiz;
+  state.questionIndex = 0;
+  state.answers = [];
   render();
   moveToTop();
 }
@@ -1515,12 +1556,15 @@ function startFullBookQuiz() {
   state.generatedQuiz = quiz;
   state.questionIndex = 0;
   state.answers = [];
-  state.awardedStars = 0;
   render();
   moveToTop();
 }
 
 function returnFromQuiz() {
+  if (state.quizOrigin === "all-subjects") {
+    goHome();
+    return;
+  }
   if (state.quizOrigin === "topic") {
     openTopicList();
   } else if (state.quizOrigin === "english-topic") {
@@ -1550,8 +1594,6 @@ function finishQuiz() {
   const quiz = getQuiz();
   const score = quizScore();
   const completedKey = `${state.subjectKey}:${state.quizId}`;
-  state.awardedStars = score;
-  profile.stars += score;
   if (!profile.completed.includes(completedKey)) {
     profile.completed.push(completedKey);
   }
@@ -1572,7 +1614,7 @@ function handleAction(actionTarget) {
 
   if (action === "open-subject") openSubject(actionTarget.dataset.subject);
 
-  if (action === "daily-challenge") startQuiz("gk", "bangladesh");
+  if (action === "start-all-subjects-quiz") startAllSubjectsQuiz();
 
   if (action === "start-quiz") startQuiz(actionTarget.dataset.subject, actionTarget.dataset.quiz);
 
@@ -1627,7 +1669,8 @@ function handleAction(actionTarget) {
   }
 
   if (action === "replay") {
-    if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
+    if (state.quizOrigin === "all-subjects") startAllSubjectsQuiz();
+    else if (state.quizOrigin === "topic") startTopicQuiz(state.topicId);
     else if (state.quizOrigin === "english-topic") startEnglishTopicQuiz(state.englishTopicId);
     else if (state.quizOrigin === "math-topic") startMathTopicQuiz(state.mathTopicId);
     else if (state.quizOrigin === "gk-topic") startGkTopicQuiz(state.gkTopicId);
