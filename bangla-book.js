@@ -862,18 +862,35 @@ window.BanglaBook = (() => {
     };
   }
 
-  function makeFullBookQuiz() {
-    const lessonIndexes = [0, 2, 5, 8, 10, 13, 15, 18, 21, 24, 26, 29, 31, 34, 36, 39, 42, 45, 48, 50];
-    const questions = lessonIndexes.map((index, questionIndex) => {
-      const chapterInfo = chapters[index];
-      const chapterQuestions = makeChapterQuestions(chapterInfo);
-      return chapterQuestions[10 + (questionIndex % 10)];
-    });
+  function shuffle(items) {
+    const shuffled = [...items];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled;
+  }
+
+  function makeFullBookQuiz(excludedQuestionIds = []) {
+    const excluded = new Set(excludedQuestionIds);
+    const fullQuestionPool = chapters.flatMap((chapterInfo) =>
+      makeChapterQuestions(chapterInfo).map((item, questionIndex) => ({
+        ...item,
+        id: `${chapterInfo.id}-question-${questionIndex + 1}`,
+        sourceChapter: chapterInfo.title
+      }))
+    );
+    const availableQuestions = fullQuestionPool.filter((item) => !excluded.has(item.id));
+    const pool = availableQuestions.length >= 10 ? availableQuestions : fullQuestionPool;
+    const selectedQuestions = shuffle(pool).slice(0, 10);
+
     return {
       id: "bangla-full-book",
-      title: "সম্পূর্ণ বই অনুশীলন",
-      description: "বইয়ের বিভিন্ন পাঠ থেকে বাছাই করা ২০টি প্রশ্ন",
-      questions
+      title: "সম্পূর্ণ বই: র‌্যান্ডম কুইজ",
+      description: "বইয়ের সব পাঠ থেকে এলোমেলো ১০টি নতুন প্রশ্ন",
+      availableQuestionCount: availableQuestions.length,
+      questionIds: selectedQuestions.map((item) => item.id),
+      questions: selectedQuestions
     };
   }
 

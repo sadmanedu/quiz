@@ -448,6 +448,7 @@ const state = {
   chapterId: null,
   quizOrigin: "standard",
   generatedQuiz: null,
+  usedFullBookQuestionIds: [],
   questionIndex: 0,
   answers: [],
   awardedStars: 0
@@ -680,11 +681,11 @@ function renderBanglaOptions() {
         <span class="quiz-count-note">মোট ${bnNumber(questionCount)}+ প্রশ্ন</span>
       </div>
       <div class="book-choice-grid">
-        <button class="book-choice-card full-book-choice" type="button" data-action="start-full-book" aria-label="সম্পূর্ণ বই থেকে ২০টি প্রশ্নের অনুশীলন শুরু করো">
+        <button class="book-choice-card full-book-choice" type="button" data-action="start-full-book" aria-label="সম্পূর্ণ বই থেকে ১০টি র‌্যান্ডম প্রশ্নের অনুশীলন শুরু করো">
           <span class="choice-topline"><span class="choice-icon" aria-hidden="true">📚</span><span class="choice-label">প্রথম অপশন</span></span>
           <span class="choice-title">সম্পূর্ণ বই</span>
-          <span class="choice-description">সব পাঠ থেকে বাছাই করা ২০টি প্রশ্নে নিজের প্রস্তুতি যাচাই করো।</span>
-          <span class="choice-footer"><span>২০ প্রশ্নের মিক্সড কুইজ</span><strong>শুরু করি <i aria-hidden="true">→</i></strong></span>
+          <span class="choice-description">সব পাঠ থেকে এলোমেলো ১০টি প্রশ্নে নিজের প্রস্তুতি যাচাই করো। প্রতিবার নতুন প্রশ্ন পাবে!</span>
+          <span class="choice-footer"><span>১০ প্রশ্নের র‌্যান্ডম কুইজ</span><strong>শুরু করি <i aria-hidden="true">→</i></strong></span>
         </button>
         <button class="book-choice-card chapter-book-choice" type="button" data-action="open-chapter-list" aria-label="অধ্যায়ভিত্তিক প্রশ্নের তালিকা দেখো">
           <span class="choice-topline"><span class="choice-icon" aria-hidden="true">🧩</span><span class="choice-label">দ্বিতীয় অপশন</span></span>
@@ -873,10 +874,16 @@ function renderComplete() {
   const quiz = getQuiz();
   const score = quizScore();
   const allCorrect = score === quiz.questions.length;
+  const isFullBookQuiz = state.quizOrigin === "full-book";
   const title = allCorrect ? "অসাধারণ!" : score >= 2 ? "দারুণ চেষ্টা!" : "তুমি পারবে!";
-  const description = allCorrect
-    ? "সবগুলো উত্তরই ঠিক হয়েছে। তুমি সত্যিই এই কুইজের তারকা!"
-    : "তুমি কুইজটি শেষ করেছো—এটাই খুব ভালো কথা। আবার খেললে আরও বেশি তারা পাবে!";
+  const description = isFullBookQuiz
+    ? allCorrect
+      ? "সব ১০টি র‌্যান্ডম প্রশ্নের উত্তরই ঠিক হয়েছে। তুমি সত্যিই বইয়ের তারকা!"
+      : "তুমি ১০টি র‌্যান্ডম প্রশ্ন শেষ করেছো। নিচের Play Again চাপলে একদম নতুন ১০টি প্রশ্ন পাবে।"
+    : allCorrect
+      ? "সবগুলো উত্তরই ঠিক হয়েছে। তুমি সত্যিই এই কুইজের তারকা!"
+      : "তুমি কুইজটি শেষ করেছো—এটাই খুব ভালো কথা। আবার খেললে আরও বেশি তারা পাবে!";
+  const replayLabel = isFullBookQuiz ? "Play Again" : "আবার খেলি";
 
   return `
     <section class="complete-view" aria-labelledby="complete-title">
@@ -893,7 +900,7 @@ function renderComplete() {
           <div class="score-stat"><strong>★ ${bnNumber(state.awardedStars)}</strong><span>নতুন তারা</span></div>
         </div>
         <div class="complete-actions">
-          <button class="return-button" type="button" data-action="replay">আবার খেলি <span aria-hidden="true">↻</span></button>
+          <button class="return-button" type="button" data-action="replay">${replayLabel} <span aria-hidden="true">↻</span></button>
           <button class="secondary-button" type="button" data-action="return-subject">আরও কুইজ দেখো <span aria-hidden="true">→</span></button>
         </div>
       </article>
@@ -1022,7 +1029,13 @@ function startChapterQuiz(chapterId) {
 }
 
 function startFullBookQuiz() {
-  const quiz = BanglaBook.makeFullBookQuiz();
+  let quiz = BanglaBook.makeFullBookQuiz(state.usedFullBookQuestionIds);
+  // Once every available question has been used, begin a fresh random cycle.
+  if (quiz.availableQuestionCount < 10) {
+    state.usedFullBookQuestionIds = [];
+    quiz = BanglaBook.makeFullBookQuiz();
+  }
+  state.usedFullBookQuestionIds = [...state.usedFullBookQuestionIds, ...quiz.questionIds];
   state.screen = "quiz";
   state.subjectKey = "bangla";
   state.quizId = quiz.id;
